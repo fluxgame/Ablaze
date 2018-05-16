@@ -1,0 +1,43 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Description:</strong>
+  <%= @transaction.description %>
+</p>
+
+<% if not @transaction.repeat_frequency.nil? %>
+<p>
+  <strong>Schedule:</strong>
+  <%= @transaction.schedule %>
+</p>
+<% end %>
+
+<% if not @transaction.prototype_transaction.nil? %>
+<p>
+  <strong>Prototype Transaction:</strong>
+  <%= link_to @transaction.prototype_transaction %>
+</p>
+<% end %>
+
+<table>
+	<tr>
+	<th>Date</th>
+	<th>Account</th>
+	<th>Budget Goal</th>
+	<th>Debit</td>
+	<th>Credit</th>
+	<th>Cleared</th>
+	<th></th>
+	</tr>
+	<%= render @transaction.ledger_entries %>
+	<tr>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td><%= @transaction.total_debits(current_user.home_asset_type) %></td>
+		<td><%= @transaction.total_credits(current_user.home_asset_type) %></td>
+		<td></td>
+	</tr>
+</table>
+
+<%= link_to 'Edit', edit_transaction_path(@transaction) %>

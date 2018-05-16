@@ -1,0 +1,22 @@
+{"state": {
+	"connectedToServer": "true", 
+	"availableToSpend": "<%= current_user.home_asset_type.to_currency(current_user.available_to_spend) %>", 
+	"fiDate": "<%= current_user.fi_date.to_formatted_s(:long_ordinal) if current_user.fi_date.present? %>",
+	"recentTransactions": [
+		<%= current_user.recent_transactions.map { |t| render t }.join(", ").html_safe %>
+	],
+	"accounts": {
+		"expense": {
+			"list": [
+			<%= current_user.mobile_expense_accounts.map { |a| render a }.join(", ").html_safe %>
+		]},
+		"spending": {
+			"list": [
+			<%= current_user.mobile_spending_accounts.map { |a| render a }.join(", ").html_safe %>
+		]}
+	},
+	"budgetGoals": {
+		"list": [
+		<%= current_user.mobile_budget_goals.map { |bg| render bg }.join(", ").html_safe %>
+	]}
+}}

@@ -1,0 +1,5 @@
+{ 
+	"id": "<%= budget_goal.id %>",  
+	"name": "<%= budget_goal.name %>",
+	"remainingAmount": "<%= budget_goal.remaining_amount.round(current_user.home_asset_type.precision) if budget_goal.remaining_amount.present? %>"
+}

@@ -1,0 +1,42 @@
+<%= form_with(model: account, local: true) do |form| %>
+  <% if account.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(account.errors.count, "error") %> prohibited this account from being saved:</h2>
+
+      <ul>
+      <% account.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :name %>
+    <%= form.text_field :name, id: :account_name %>
+  </div>
+
+  <div class="field">
+    <%= form.label :expected_annual_return %>
+    <%= form.text_field :expected_annual_return, id: :account_expected_annual_return %>
+  </div>
+
+  <div class="field">
+    <%= form.label :asset_type_id %>
+	<%= form.select :asset_type_id, AssetType.all.map{|s|[s.name, s.id]} %>
+  </div>
+
+  <div class="field">
+    <%= form.label :account_type_id %>
+	<%= form.select :account_type_id, AccountType.all.map{|s|[s.name, s.id]} %>
+  </div>
+
+  <div class="field">
+    <%= form.label :mobile %>
+	<%= form.check_box :mobile, id: :account_mobile %>
+  </div>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>

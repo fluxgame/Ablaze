@@ -1,0 +1,11 @@
+<%= form_with model: @ledger_entry do |form| %>
+	<tr>
+	<td><%= form.text_field :date, id: :ledger_entry_date %></td>
+	<td><%= form.select(:account_id, Account.all.collect {|a| [a.name, a.id]}) -%></td>
+	<td><%= form.select(:budget_goal_id, BudgetGoal.all.collect {|a| [a.name, a.id]}, :include_blank => true) -%></td>
+	<td><%= form.text_field :debit, id: :ledger_entry_debit %></td>
+	<td><%= form.text_field :credit, id: :ledger_entry_credit %></td>
+	<td><%= form.check_box :cleared ,id: :ledger_entry_cleared %></td>
+	<td><%= form.submit %></td>
+	</tr>
+<% end %>

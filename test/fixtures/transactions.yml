@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  repeat_frequency: MyString
+  user: one
+  prototype_transaction: one
+
+two:
+  repeat_frequency: MyString
+  user: two
+  prototype_transaction: two

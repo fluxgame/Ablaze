@@ -1,0 +1,41 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Accounts</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Expected annual return</th>
+      <th>Asset type</th>
+      <th>Account type</th>
+	  <th>Last Reconciliation</th>
+	  <th>Shares</th>
+	  <th>Balance</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @accounts.each do |account| %>
+      <tr>
+        <td><%= account.name %></td>
+        <td><%= account.expected_annual_return %></td>
+        <td><%= account.asset_type.name %></td>
+        <td><%= account.account_type.name %></td>
+		<td><%= account.latest_reconciliation.date if !account.latest_reconciliation.nil? %></td>
+		<td><%= account.asset_type.to_currency(account.current_balance) if account.asset_type_id != current_user.home_asset_type_id %>
+		<td style="text-align: right">
+			<%= current_user.home_asset_type.to_currency(account.current_balance(current_user.home_asset_type)) %>
+		</td>
+        <td><%= link_to 'Show', account %></td>
+        <td><%= link_to 'Edit', edit_account_path(account) %></td>
+        <td><%= link_to 'Destroy', account, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Account', new_account_path %>

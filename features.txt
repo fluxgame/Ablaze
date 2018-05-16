@@ -1,0 +1,19 @@
+DONE - account register (CRUD ledger entries)
+DONE - merge transactions
+DONE - transaction edit
+DONE - credit/debit balance verification
+DONE - account reconciliation
+DONE - scheduled transactions
+DONE - account balance forecasting
+DONE - "available to spend" amount
+DONE - budget goals
+DONE - FI date calculation
+- easier scheduled transaction creation
+DONE - copy & persist scheduled transactions
+- disallow adding a date to a ledger entry contained by a scheduled transaction
+DONE - rolling month spending by expense account
+- loan payment scheduler
+DONE - prevent changing the date or amount of a reconciled transaction
+- reverse a reconciliation
+- scheduled tasks to create scheduled transations and pull stock price
+- live updates of debit and credit totals in edit mode

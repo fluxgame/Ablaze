@@ -1,0 +1,33 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Asset Types</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Abbreviation</th>
+	  <th>Currency Symbol</th>
+	  <th>Precision</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @asset_types.each do |asset_type| %>
+      <tr>
+        <td><%= asset_type.name %></td>
+        <td><%= asset_type.abbreviation %></td>
+		<td><%= asset_type.currency_symbol %></td>
+		<td><%= asset_type.precision %></td>
+        <td><%= link_to 'Show', asset_type %></td>
+        <td><%= link_to 'Edit', edit_asset_type_path(asset_type) %></td>
+        <td><%= link_to 'Destroy', asset_type, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Asset Type', new_asset_type_path %>

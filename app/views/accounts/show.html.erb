@@ -1,0 +1,102 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Name:</strong>
+  <%= @account.name %>
+</p>
+
+<p>
+  <strong>Expected annual return:</strong>
+  <%= @account.expected_annual_return %>
+</p>
+
+<p>
+  <strong>Asset type:</strong>
+  <%= @account.asset_type.name %>
+</p>
+
+<p>
+  <strong>Account type:</strong>
+  <%= @account.account_type.name %>
+</p>
+
+<% if @account.account_type.reconcileable? %>
+<p>
+  <strong>Reconciled Balance:</strong>
+  <%= @account.asset_type.to_currency(@account.reconciled_balance) %>
+</p>
+
+<p>
+  <strong>Cleared Balance:</strong>
+  <span id="cleared_balance"><%= @account.asset_type.to_currency(@account.cleared_balance) %></span>
+</p>
+
+<p><%= @account.mobile ? "S" : "Not s" %>hown on mobile app.</p>
+
+<p>
+	<%= form_tag(reconcile_account_path(@account), method: :get, remote: true ) do %>
+    Date: <%= text_field_tag(:reconcile_date) %>
+    <%= submit_tag("Reconcile") %>
+	<% end %>
+</p>
+<% end %>
+
+<p>
+	<%= form_tag(transfer_account_path(@account), method: :post, remote: true ) do %>
+    Date: <%= text_field_tag(:date) %>
+    Shares: <%= text_field_tag(:shares) %>
+    Price: <%= text_field_tag(:price) %>
+    Settlement Account: <%= select_tag :dest_account_id, options_from_collection_for_select(Account.all, "id", "name") -%>
+    <%= submit_tag("Transfer") %>
+	<% end %>
+</p>
+
+<%= link_to 'Edit', edit_account_path(@account) %> |
+<%= link_to 'New Transaction', new_transaction_path %>
+
+<table>
+	<tr>
+	<th>Date</th>
+	<th>Description</th>
+	<th>Destination Account</th>
+	<th>Budget Goal</th>
+	<th>Debit</td>
+	<th>Credit</th>
+	<% if @account.account_type.reconcileable? %><th>Cleared</th><% end %>
+	<th></th>
+	<th></th>
+	</tr>
+    <% @ledger_entries.each do |ledger_entry| %>
+<% if !ledger_entry.date.nil? %>
+<tr>
+	<td><%= ledger_entry.date %></td>
+	<td><%= ledger_entry.parent_transaction.description %></td>
+	<td>
+	<% if ledger_entry.linked_entries.count < 1 %>
+		Orphan
+	<% elsif ledger_entry.linked_entries.count > 1 %>
+		Split Transaction
+	<% else %>
+	<%= ledger_entry.linked_entries.first.account.name %>
+	<% end %>
+	</td>
+	<td><%= ledger_entry.budget_goal.name unless ledger_entry.budget_goal.nil? %></td>
+	<td style="text-align: right"><%= @account.asset_type.to_currency(ledger_entry.debit) %></td>
+	<td style="text-align: right"><%= @account.asset_type.to_currency(ledger_entry.credit) %></td>
+	<% if @account.account_type.reconcileable? %><td>
+<% if ledger_entry.account_reconciliation.nil? %>
+		<%= check_box_tag dom_id(ledger_entry, :cleared), nil, ledger_entry.cleared, {class: "cleared_check",
+				data: { 
+					url: toggle_cleared_ledger_entry_path(ledger_entry), 
+					remote: true, method: :get}} %>
+<% else %>
+	R
+<% end %>
+	</td><% end %>
+    <td><%= link_to 'Edit', ledger_entry.parent_transaction %></td>
+	<td><%= link_to 'Destroy', ledger_entry.parent_transaction, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+</tr>
+<% end %>
+	<% end %>
+</table>
+

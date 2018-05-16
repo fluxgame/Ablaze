@@ -1,0 +1,24 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Date:</strong>
+  <%= @asset_valuation.date %>
+</p>
+
+<p>
+  <strong>Asset type:</strong>
+  <%= @asset_valuation.asset_type %>
+</p>
+
+<p>
+  <strong>Valuation asset type:</strong>
+  <%= @asset_valuation.valuation_asset_type %>
+</p>
+
+<p>
+  <strong>Amount:</strong>
+  <%= @asset_valuation.amount %>
+</p>
+
+<%= link_to 'Edit', edit_asset_valuation_path(@asset_valuation) %> |
+<%= link_to 'Back', asset_valuations_path %>

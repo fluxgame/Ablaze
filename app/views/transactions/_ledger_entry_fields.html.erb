@@ -1,0 +1,9 @@
+<tr class="nested-fields">
+	<td><%= f.text_field :date %></td>
+	<td><%= f.select(:account_id, Account.all.collect {|a| [a.name, a.id]}) -%></td>
+	<td><%= f.select(:budget_goal_id, BudgetGoal.all.collect {|a| [a.name, a.id]}, :include_blank => true) -%></td>
+	<td><%= f.text_field :debit %></td>
+	<td><%= f.text_field :credit %></td>
+	<td><%= f.check_box :cleared %></td>
+	<td><%= f.check_box :_destroy %><%= link_to_remove_association "remove", f %></td>
+</tr>

@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  date: 2018-04-17 13:58:30
+  asset_type: one
+  valuation_asset_type: one
+  amount: 1.5
+
+two:
+  date: 2018-04-17 13:58:30
+  asset_type: two
+  valuation_asset_type: two
+  amount: 1.5

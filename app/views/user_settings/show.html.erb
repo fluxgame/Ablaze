@@ -1,0 +1,19 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Home asset type:</strong>
+  <%= @user_setting.home_asset_type %>
+</p>
+
+<p>
+  <strong>Withdrawal rate:</strong>
+  <%= @user_setting.withdrawal_rate %>
+</p>
+
+<p>
+  <strong>Goal savings rate:</strong>
+  <%= @user_setting.goal_savings_rate %>
+</p>
+
+<%= link_to 'Edit', edit_user_setting_path(@user_setting) %> |
+<%= link_to 'Back', user_settings_path %>

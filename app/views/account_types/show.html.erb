@@ -1,0 +1,14 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Name:</strong>
+  <%= @account_type.name %>
+</p>
+
+<p>
+  <strong>Master account type:</strong>
+  <%= @account_type.master_account_type %>
+</p>
+
+<%= link_to 'Edit', edit_account_type_path(@account_type) %> |
+<%= link_to 'Back', account_types_path %>

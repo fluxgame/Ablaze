@@ -1,0 +1,7 @@
+{
+"id": "<%= ledger_entry.id.to_s %>",
+"account": <%= render ledger_entry.account %>,
+"budgetGoal": <%= render ledger_entry.budget_goal.nil? ? BudgetGoal.new : ledger_entry.budget_goal %>,
+"amount": "<%= (ledger_entry.debit.nil? ? ledger_entry.credit : ledger_entry.debit) %>",
+"debit": <%= ledger_entry.debit.nil? ? false : true %>
+}

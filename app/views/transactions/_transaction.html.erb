@@ -1,0 +1,9 @@
+{
+			"id": "<%= transaction.id.to_s %>",
+			"date": "<%= transaction.master_ledger_entry.date.to_formatted_s(:date)%>",
+			"description": "<%= transaction.description %>",
+			"masterLedgerEntry": <%= render transaction.master_ledger_entry %>,
+			"slaveLedgerEntries": [
+				<%= transaction.slave_ledger_entries.map { |le| render le }.join(", ").html_safe %>
+			]
+}

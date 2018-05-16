@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  expected_annual_return: 1.5
+  asset_type: one
+  account_type: one
+
+two:
+  name: MyString
+  expected_annual_return: 1.5
+  asset_type: two
+  account_type: two

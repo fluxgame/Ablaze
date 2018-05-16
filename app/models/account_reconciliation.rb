@@ -1,0 +1,2 @@
+class AccountReconciliation < ApplicationRecord
+end

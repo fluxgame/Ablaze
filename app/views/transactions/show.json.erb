@@ -1,0 +1,20 @@
+{
+	"id": "<%= @transaction.id %>",
+	"date": "<%= @transaction.date %>",
+	"description": "<%= @transaction.description %>",
+<% if @transaction.simple? %>
+	"sourceAccount": { "id": "<%= @transaction.source_account.id %>",  "name": "<%= @transaction.source_account.name %>"},
+	"destAccount": { "id": "<%= @transaction.dest_account.id %>",  "name": "<%= @transaction.dest_account.name %>"},
+	"amount": "<%= @transaction.amount %>",
+	"reconciled": "<%= @transaction.reconciled? %>"
+<% else %>
+	"ledgerEntries": [
+	<% last_id = @transaction.ledger_entries.last.id %>
+	<% @transaction.ledger_entries.each do |le| %>
+		{
+			<%= render le %>
+		}<%= "," if !le.id.equal?(last_id) %>
+		<% end %>
+		]
+<% end %>
+}

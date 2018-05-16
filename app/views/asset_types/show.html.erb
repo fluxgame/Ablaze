@@ -1,0 +1,24 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Name:</strong>
+  <%= @asset_type.name %>
+</p>
+
+<p>
+  <strong>Abbreviation:</strong>
+  <%= @asset_type.abbreviation %>
+</p>
+
+<p>
+  <strong>Currency Symbol:</strong>
+  <%= @asset_type.currency_symbol %>
+</p>
+
+<p>
+  <strong>Precision:</strong>
+  <%= @asset_type.precision %>
+</p>
+
+<%= link_to 'Edit', edit_asset_type_path(@asset_type) %> |
+<%= link_to 'Back', asset_types_path %>

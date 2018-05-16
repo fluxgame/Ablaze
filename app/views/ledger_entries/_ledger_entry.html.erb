@@ -1,0 +1,18 @@
+<tr class="<%= cycle('odd','even') -%>">
+	<td><%= ledger_entry.date %></td>
+	<td><%= ledger_entry.account.name %></td>
+	<td><%= ledger_entry.budget_goal.name unless ledger_entry.budget_goal.nil? %></td>
+	<td><%= ledger_entry.debit %>
+		<% if !ledger_entry.debit.nil? && ledger_entry.account.asset_type_id != current_user.home_asset_type_id %>
+		<% in_home_asset_type = ledger_entry.debit_in(current_user.home_asset_type) %>
+		(<%= in_home_asset_type.nil? ? "unknown" : in_home_asset_type %>)
+		<% end %>
+	</td>
+	<td><%= ledger_entry.credit %>
+		<% if !ledger_entry.credit.nil? && ledger_entry.account.asset_type_id != current_user.home_asset_type_id %>
+		<% in_home_asset_type = ledger_entry.credit_in(current_user.home_asset_type) %>
+		(<%= in_home_asset_type.nil? ? "unknown" : in_home_asset_type %>)
+		<% end %>
+	</td>
+	<td><%= ledger_entry.cleared %></td>
+</tr>

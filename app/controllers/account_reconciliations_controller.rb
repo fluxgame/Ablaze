@@ -1,0 +1,2 @@
+class AccountReconciliationsController < ApplicationController
+end

@@ -1,0 +1,2 @@
+module AssetValuationsHelper
+end

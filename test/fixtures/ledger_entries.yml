@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  cleared: false
+  debit: 1.5
+  credit: 1.5
+  account: one
+  budget_goal: one
+  transaction_date: 2018-04-09 01:00:51
+  transaction: one
+
+two:
+  cleared: false
+  debit: 1.5
+  credit: 1.5
+  account: two
+  budget_goal: two
+  transaction_date: 2018-04-09 01:00:51
+  transaction: two
