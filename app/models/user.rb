@@ -13,13 +13,13 @@ class User < ApplicationRecord
 
   def mobile_expense_accounts
     Rails.cache.fetch("#{cache_key}/mobile_expense_accounts", expires_in: 15.minutes) {
-      Account.left_joins(:ledger_entries).group(:id).order('count(ledger_entries.id) desc').where(user_id: self.id, mobile: true).includes(:account_type).where(account_types: {master_account_type: :expense})
+      Account.left_joins(:ledger_entries).group(:id).order('count(ledger_entries.id) desc').where(user_id: self.id, mobile: true).joins(:account_type).where(account_types: {master_account_type: :expense})
     }
   end
   
   def mobile_spending_accounts
     Rails.cache.fetch("#{cache_key}/mobile_spending_accounts", expires_in: 15.minutes) {
-      Account.left_joins(:ledger_entries).group(:id).order('count(ledger_entries.id) desc').where(user_id: self.id, mobile: true).includes(:account_type).where(account_types: {master_account_type: [:asset, :liability]})
+      Account.left_joins(:ledger_entries).group(:id).order('count(ledger_entries.id) desc').where(user_id: self.id, mobile: true).joins(:account_type).where(account_types: {master_account_type: [:asset, :liability]})
     }
   end
   

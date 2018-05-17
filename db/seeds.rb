@@ -21,7 +21,6 @@ AccountType.delete_all
 
 CSV.foreach("db/seed_asset_types.csv", :headers => true, :return_headers => false) do |row|
 #  id,name,abbreviation,created_at,updated_at,fetch_prices,currency_symbol,precision
-puts row
   AssetType.new do |t|
     t.id = row[0]
     t.name = row[1]
@@ -33,9 +32,10 @@ puts row
   end
 end
 
+ActiveRecord::Base.connection.execute("SELECT setval('asset_types_id_seq', (SELECT max(id) FROM asset_types));")
+
 CSV.foreach("db/seed_account_types.csv", :headers => true, :return_headers => false) do |row|
 #  id,name,master_account_type,created_at,updated_at
-puts row
   AccountType.new do |t|
     t.id = row[0]
     t.name = row[1]
@@ -44,12 +44,13 @@ puts row
   end
 end
 
-user = User.create!(email: "fluxgame@gmail.com", password: "123456", home_asset_type_id: AssetType.where(abbreviation: 'USD').first.id)
+ActiveRecord::Base.connection.execute("SELECT setval('account_types_id_seq', (SELECT max(id) FROM account_types));")
+
+user = User.create!(email: "fluxgame@gmail.com", password: "123456", authentication_token: "_sMbFzbPr_b7dF7V9sCk", home_asset_type_id: AssetType.where(abbreviation: 'USD').first.id)
 user.update_reserved_amount
 
 CSV.foreach("db/seed_accounts.csv", :headers => true, :return_headers => false) do |row|
 #  id,name,expected_annual_return,asset_type_id,account_type_id,created_at,updated_at,days_to_forecast,user_id,mobile
-puts row
   Account.new do |t|
     t.id = row[0]
     t.name = row[1]
@@ -62,9 +63,10 @@ puts row
   end
 end
 
+ActiveRecord::Base.connection.execute("SELECT setval('accounts_id_seq', (SELECT max(id) FROM accounts));")
+
 CSV.foreach("db/seed_transactions.csv", :headers => true, :return_headers => false) do |row|
 #  id,repeat_frequency,user_id,prototype_transaction_id,created_at,updated_at,description
-puts row
   Transaction.new do |t|
     t.id = row[0]
     t.repeat_frequency = row[1]
@@ -75,9 +77,10 @@ puts row
   end
 end
 
+ActiveRecord::Base.connection.execute("SELECT setval('transactions_id_seq', (SELECT max(id) FROM transactions));")
+
 CSV.foreach("db/seed_account_reconciliations.csv", :headers => true, :return_headers => false) do |row|
 #  id,account_id,balance,date
-puts row
   AccountReconciliation.new do |t|
     t.id = row[0]
     t.account_id = row[1]
@@ -87,9 +90,10 @@ puts row
   end
 end
 
+ActiveRecord::Base.connection.execute("SELECT setval('account_reconciliations_id_seq', (SELECT max(id) FROM account_reconciliations));")
+
 CSV.foreach("db/seed_budget_goals.csv", :headers => true, :return_headers => false) do |row|
 #id,budgeted_amount,name,user_id,created_at,updated_at
-puts row
   bg = BudgetGoal.new do |t|
     t.id = row[0]
     t.name = row[2]
@@ -100,9 +104,10 @@ puts row
   bg.budgeted_amounts.create! amount: row[1], date: Date.today
 end
 
+ActiveRecord::Base.connection.execute("SELECT setval('budget_goals_id_seq', (SELECT max(id) FROM budget_goals));")
+
 CSV.foreach("db/seed_ledger_entries.csv", :headers => true, :return_headers => false) do |row|
 #  id,cleared,debit,credit,account_id,budget_goal_id,transaction_id,created_at,updated_at,date,account_reconciliation_id,account_reconciliations_id,account_balance_id
-puts row
   LedgerEntry.new do |t|
     t.id = row[0]
     t.cleared = row[1]
@@ -118,6 +123,8 @@ puts row
     t.save
   end
 end
+
+ActiveRecord::Base.connection.execute("SELECT setval('ledger_entries_id_seq', (SELECT max(id) FROM ledger_entries));")
 
 UpdateAssetValuations.perform_now
 CreateScheduledTransactions.perform_now
