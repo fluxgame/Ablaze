@@ -1,4 +1,4 @@
-class CreateAccountReconciliations < ActiveRecord::Migration[5.1]
+class CreateAccountReconciliations < ActiveRecord::Migration[5.2]
   def change
     create_table :account_reconciliations do |t|
       t.references :account, foreign_key: true
@@ -6,8 +6,5 @@ class CreateAccountReconciliations < ActiveRecord::Migration[5.1]
       t.date :date, :null => false
       t.timestamps
     end
-
-    add_column :ledger_entries, :account_reconciliation_id, :integer
-    add_reference :ledger_entries, :account_reconciliations, index: true
   end
 end

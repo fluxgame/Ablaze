@@ -9,55 +9,118 @@
 
 require 'csv'    
 
-LedgerEntry.all.each { |a| a.destroy } 
-Transaction.all.each { |a| a.destroy } 
-Account.all.each { |a| a.destroy } 
-AssetType.all.each { |a| a.destroy } 
-AccountType.all.each { |a| a.destroy } 
+LedgerEntry.delete_all
+Transaction.delete_all
+AccountReconciliation.delete_all
+Account.delete_all
+BudgetedAmount.delete_all
+BudgetGoal.delete_all
+User.delete_all
+AssetType.delete_all
+AccountType.delete_all
 
-asset_type_list = [
-  [ "USD", "United States Dollars" ],
-  [ "VTI", "Vanguard Total Stock Market ETF" ],
-  [ "VTSAX", "Vanguard Total Stock Market Index Fund Admiral Shares" ],
-  [ "HOUSE", "45 Havelock Rd"]
-]
-
-asset_type_list.each do |abbreviation, name|
-  AssetType.create( name: name, abbreviation: abbreviation )
+CSV.foreach("db/seed_asset_types.csv", :headers => true, :return_headers => false) do |row|
+#  id,name,abbreviation,created_at,updated_at,fetch_prices,currency_symbol,precision
+puts row
+  AssetType.new do |t|
+    t.id = row[0]
+    t.name = row[1]
+    t.abbreviation = row[2]
+    t.fetch_prices = row[5]
+    t.currency_symbol = row[6]
+    t.precision = row[7]
+    t.save
+  end
 end
 
-#   enum master_account_type: [:asset, :liability, :equity, :income, :expense]
-account_type_list = [
-  [ "Income", 4 ],
-  [ "Expense", 3 ],
-  [ "Equity", 2 ],
-  [ "Long-Term Liability", 1 ],
-  [ "Current Liability", 1 ],
-  [ "Deferred Asset", 0 ],
-  [ "Fixed Asset", 0 ],
-  [ "Current Asset", 0 ],
-  [ "Bank", 0 ]
-]
-
-account_type_list.each do |name, master_account_type|
-  AccountType.create( name: name, master_account_type: master_account_type )
+CSV.foreach("db/seed_account_types.csv", :headers => true, :return_headers => false) do |row|
+#  id,name,master_account_type,created_at,updated_at
+puts row
+  AccountType.new do |t|
+    t.id = row[0]
+    t.name = row[1]
+    t.master_account_type = AccountType.master_account_types.keys[row[2].to_i]
+    t.save
+  end
 end
 
-user = User.where(email: "fluxgame@gmail.com").first
+user = User.create!(email: "fluxgame@gmail.com", password: "123456", home_asset_type_id: AssetType.where(abbreviation: 'USD').first.id)
+user.update_reserved_amount
 
 CSV.foreach("db/seed_accounts.csv", :headers => true, :return_headers => false) do |row|
-  puts row
-  account_type = AccountType.where(name: row[3]).first.id
-  asset_type = AssetType.where(abbreviation: row[2]).first.id
-  account = Account.create!(name: row[0], expected_annual_return: row[1], account_type_id: account_type, asset_type_id: asset_type)
-  account.account_ownerships.create(user: user)
+#  id,name,expected_annual_return,asset_type_id,account_type_id,created_at,updated_at,days_to_forecast,user_id,mobile
+puts row
+  Account.new do |t|
+    t.id = row[0]
+    t.name = row[1]
+    t.expected_annual_return = row[2]
+    t.asset_type_id = row[3]
+    t.account_type_id = row[4]
+    t.user = user
+    t.mobile = row[9]
+    t.save
+  end
 end
 
 CSV.foreach("db/seed_transactions.csv", :headers => true, :return_headers => false) do |row|
-  puts row
-  debit_account = Account.where(name: row[2]).first.id
-  credit_account = Account.where(name: row[3]).first.id
-  transaction = Transaction.create!(description: row[1], user_id: 1)
-  transaction.ledger_entries.create!(date: row[0], account_id: debit_account, debit: row[4], cleared: false)
-  transaction.ledger_entries.create!(date: row[0], account_id: credit_account, credit: row[4], cleared: false)
+#  id,repeat_frequency,user_id,prototype_transaction_id,created_at,updated_at,description
+puts row
+  Transaction.new do |t|
+    t.id = row[0]
+    t.repeat_frequency = row[1]
+    t.user = user
+    t.prototype_transaction_id = row[3]
+    t.description = row[6]
+    t.save
+  end
+end
+
+CSV.foreach("db/seed_account_reconciliations.csv", :headers => true, :return_headers => false) do |row|
+#  id,account_id,balance,date
+puts row
+  AccountReconciliation.new do |t|
+    t.id = row[0]
+    t.account_id = row[1]
+    t.balance = row[2]
+    t.date = row[3]
+    t.save
+  end
+end
+
+CSV.foreach("db/seed_budget_goals.csv", :headers => true, :return_headers => false) do |row|
+#id,budgeted_amount,name,user_id,created_at,updated_at
+puts row
+  bg = BudgetGoal.new do |t|
+    t.id = row[0]
+    t.name = row[2]
+    t.user = user
+    t.save
+  end
+  
+  bg.budgeted_amounts.create! amount: row[1], date: Date.today
+end
+
+CSV.foreach("db/seed_ledger_entries.csv", :headers => true, :return_headers => false) do |row|
+#  id,cleared,debit,credit,account_id,budget_goal_id,transaction_id,created_at,updated_at,date,account_reconciliation_id,account_reconciliations_id,account_balance_id
+puts row
+  LedgerEntry.new do |t|
+    t.id = row[0]
+    t.cleared = row[1]
+    t.debit = row[2]
+    t.credit = row[3]
+    t.account_id = row[4]
+    t.budget_goal_id = row[5]
+    t.transaction_id = row[6]
+    t.date = row[9]
+    t.account_balance_id = row[11]
+    t.save
+    t.account_reconciliation_id = row[10]
+    t.save
+  end
+end
+
+UpdateAssetValuations.perform_now
+CreateScheduledTransactions.perform_now
+Account.all.each do |a|
+  a.balance_as_of(Date.today)
 end

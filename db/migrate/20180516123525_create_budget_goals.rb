@@ -1,7 +1,6 @@
-class CreateBudgetGoals < ActiveRecord::Migration[5.1]
+class CreateBudgetGoals < ActiveRecord::Migration[5.2]
   def change
     create_table :budget_goals do |t|
-      t.float :budgeted_amount, :null => false
       t.string :name, :null => false
       t.references :user, foreign_key: true, :null => false
 

@@ -38,7 +38,9 @@ class LedgerEntry < ApplicationRecord
   end
   
   def reconciled?
-    account_reconciliation.present?
+    persisted = LedgerEntry.where(id: self.id).first
+    return false if persisted.nil?
+    return persisted.account_reconciliation.present?
   end
   
   def debit_in(dest_asset_type)

@@ -39,19 +39,10 @@ class User < ApplicationRecord
     }
   end
   
-  def update_reserved_amount
-    reserved_goal_name = "Reserved"
-    reserved_goal = BudgetGoal.where(user_id: self.id, name: reserved_goal_name).first
-    
-    if reserved_goal.nil?
-      reserved_goal = BudgetGoal.new
-      reserved_goal.name = reserved_goal_name
-      reserved_goal.user_id = self.id
-    end
-    
+  def update_reserved_amount    
     scheduled_transactions = Transaction.where(user_id: self.id).where.not(repeat_frequency: nil)
     
-    reserved_goal.budgeted_amount = running_total = 0
+    budgeted_amount = running_total = 0
     for i in 1..365
       scheduled_transactions.each do |st|
         if st.schedule.occurs_on?(Date.today + i.day)
@@ -62,10 +53,26 @@ class User < ApplicationRecord
           end
         end
       end
-      reserved_goal.budgeted_amount = running_total if running_total > reserved_goal.budgeted_amount
-    end    
-
-    reserved_goal.save
+      budgeted_amount = running_total if running_total > budgeted_amount
+    end
+    
+    rg = self.reserved_goal
+    BudgetedAmount.where(budget_goal_id: rg.id).delete_all
+    rg.budgeted_amounts.create! amount: budgeted_amount, date: Date.today
+  end
+  
+  def reserved_goal
+    reserved_goal_name = "Reserved"
+    reserved_goal = BudgetGoal.where(user_id: self.id, name: reserved_goal_name).first
+    
+    if reserved_goal.nil?
+      reserved_goal = BudgetGoal.new
+      reserved_goal.name = reserved_goal_name
+      reserved_goal.user_id = self.id
+      reserved_goal.save
+    end
+    
+    return reserved_goal
   end
   
   def available_to_spend 
@@ -135,6 +142,7 @@ class User < ApplicationRecord
               am[:post_fi_expenses] += annual_amount if account.post_fi_expense?
             end
           elsif [:asset, :liability].include?(account_type)
+            puts account.name
             account_balance = account.current_balance(self.home_asset_type)
             am[:average_rate_of_return] += account.expected_annual_return * (account_balance.nil? ? 0 : account_balance)
             am[:assets] += account_balance if account_type == :asset

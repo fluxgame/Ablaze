@@ -7,8 +7,6 @@ class Account < ApplicationRecord
   has_many :account_balances
   has_many :ledger_entries
   
-  after_save :update_balances, if: :days_to_forecast_changed?
-
   attr_reader :balance
   
   def Account.accounts_of_type(master_account_type, user)
@@ -33,7 +31,7 @@ class Account < ApplicationRecord
     if stored_balance.nil?
       balance = 0
       
-      if date > first_ledger_entry.date
+      if date >= first_ledger_entry.date
         balance -= LedgerEntry.where(account_id: self.id, date: date).sum(:credit)
         balance += LedgerEntry.where(account_id: self.id, date: date).sum(:debit)
         balance += self.balance_as_of(date - 1.day)
