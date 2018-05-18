@@ -17,3 +17,7 @@ DONE - prevent changing the date or amount of a reconciled transaction
 - reverse a reconciliation
 - scheduled tasks to create scheduled transations and pull stock price
 - live updates of debit and credit totals in edit mode
+- implement JSON web tokens for API access
+- view account register with reconciled transactions
+- account register pagination
+- cleanup account index
