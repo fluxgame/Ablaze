@@ -68,13 +68,13 @@ class Account < ApplicationRecord
   end
   
   def average_monthly_spending(in_asset_type = self.asset_type)
-    first_transaction = LedgerEntry.where(account_id: self.id).where.not(date: nil).order(date: :asc).first
+    first_transaction_date = self.user.first_transaction_date
     
-    if first_transaction.nil?
+    if first_transaction_date.nil?
       return 0
     else
       ams = self.change_in_balance(Date.today - 1.year, Date.today, in_asset_type) / 12
-      years_of_transactions = (Date.today - first_transaction.date) / 365
+      years_of_transactions = (Date.today - first_transaction_date) / 365
       if years_of_transactions < 1
         ams /= years_of_transactions
       end

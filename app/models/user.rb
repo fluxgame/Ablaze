@@ -100,6 +100,11 @@ class User < ApplicationRecord
       nil
     end
   end
+  
+  def first_transaction_date 
+    first_transaction = LedgerEntry.includes(:account).where(:accounts =>{:user_id => self.id}).where.not(date: nil).order(date: :asc).first
+    return first_transaction.date if first_transaction.present?
+  end
     
   def fi_date
     return nil if self.years_to_fi.nil?
@@ -132,7 +137,7 @@ class User < ApplicationRecord
         current_spending_balance: 0
       }
 
-      first_transaction_date = LedgerEntry.includes(:account).where(:accounts =>{:user_id => self.id}).where.not(date: nil).order(date: :asc).first.date
+      first_transaction_date = self.first_transaction_date
       
       if !first_transaction_date.nil?
         self.accounts.each do |account|
