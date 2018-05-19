@@ -5,8 +5,18 @@ class LedgerEntry < ApplicationRecord
   belongs_to :account_reconciliation, optional: true
   belongs_to :account_balance, optional: true
   
+  before_save :verify_date
   after_save :after_amount_changed, :credit_changed? || :debit_changed?
   around_destroy :do_destroy
+  
+  def verify_date
+    if self.date > Date.today
+      puts "future transactions should be created as scheduled transaction"
+      errors.add(:date, "future transactions should be created as scheduled transaction")
+      throw :abort
+    end
+  end
+    
   
   def after_amount_changed
     invalidate_account_balances(self.account_id, self.date)

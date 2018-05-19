@@ -62,7 +62,7 @@ class Transaction < ApplicationRecord
           end
         else
           next_date = next_dates[0]
-          sch.start_time = new Date(next_date + 1.day)
+          sch.start_time = next_date + 1.day
           self.repeat_frequency = sch.to_yaml
           self.save
 
