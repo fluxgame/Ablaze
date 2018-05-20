@@ -12,6 +12,8 @@
 			<th>Expense</th>
 			<th>Rolling Month's Spending</th>
 			<th>Average Monthly Spending</th>
+			<th>Total Spending</th>
+			<th>Years of Expenses</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -20,6 +22,8 @@
 			<td><%= a.name %></td>
 			<td><%= current_user.home_asset_type.to_currency(a.last_months_spending(current_user.home_asset_type)) %></td>
 			<td><%= current_user.home_asset_type.to_currency(a.average_monthly_spending(current_user.home_asset_type)) %></td>
+			<td><%= current_user.home_asset_type.to_currency(a.current_balance(current_user.home_asset_type))%></td>
+			<td><%= a.years_of_transactions %></td>
 		</tr>
 		<% end %>
 	</tbody>
