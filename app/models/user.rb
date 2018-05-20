@@ -137,7 +137,8 @@ class User < ApplicationRecord
         current_spending_balance: 0
       }
 
-      first_transaction_date = self.first_transaction_date
+#      first_transaction_date = self.first_transaction_date
+      first_transaction_date = Date.new(2018,1,1)
       
       if !first_transaction_date.nil?
         self.accounts.each do |account|
