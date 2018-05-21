@@ -39,6 +39,14 @@
    		 			<%= render 'ledger_entry_fields', f: ledger_entry %>
 				<% end %>
 			</tbody>
+			<tfoot>
+				<tr>
+					<td colspan="3"></td>
+					<td><%= @transaction.total_debits(current_user.home_asset_type) %></td>
+					<td><%= @transaction.total_credits(current_user.home_asset_type) %></td>
+					<td></td>
+				</tr>
+			</tfoot>
 		</table>
 		<div class="links">
 			<%= link_to_add_association 'add ledger entry', form, :ledger_entries, data: {"association-insertion-node" => "tbody.ledger_entries", "association-insertion-method" => "append"}%>

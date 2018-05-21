@@ -17,7 +17,6 @@ class LedgerEntry < ApplicationRecord
     end
   end
     
-  
   def after_amount_changed
     invalidate_account_balances(self.account_id, self.date)
   end
