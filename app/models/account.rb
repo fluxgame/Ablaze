@@ -22,26 +22,27 @@ class Account < ApplicationRecord
     raise ArgumentError.new("date is a " + date.class.name) if (!date.is_a?(Date))
     raise ArgumentError.new("Can't calculate a future balance.") if (date > Date.today)
       
-    first_ledger_entry = LedgerEntry.where(account_id: self.id).where.not(date: nil).order(date: :asc).first
-    return 0 if first_ledger_entry.nil?
-    date = first_ledger_entry.date - 1.day if first_ledger_entry.date > date
-    
     stored_balance = AccountBalance.where(date: date, account_id: self.id).first
-    
+
     if stored_balance.nil?
-      balance = 0
-      
-      if date >= first_ledger_entry.date
+      previous_ledger_entry = LedgerEntry.where(account_id: self.id).where('date <= ?', date).order(date: :desc).first
+      return 0 if previous_ledger_entry.nil?
+
+      if previous_ledger_entry.date == date
+        balance = self.balance_as_of(date - 1.day)
         balance -= LedgerEntry.where(account_id: self.id, date: date).sum(:credit)
         balance += LedgerEntry.where(account_id: self.id, date: date).sum(:debit)
-        balance += self.balance_as_of(date - 1.day)
+
+        stored_balance = self.account_balances.create! account_id: self.id, date: date, balance: balance
+        LedgerEntry.where(account_id: self.id, date: date).update_all(account_balance_id: stored_balance.id)
+      else 
+        balance = self.balance_as_of(previous_ledger_entry.date)
       end
-      
-      stored_balance = self.account_balances.create! account_id: self.id, date: date, balance: balance
-      LedgerEntry.where(account_id: self.id, date: date).update_all(account_balance_id: stored_balance.id)
+    else
+      balance = stored_balance.balance
     end
       
-    self.asset_type.exchange(stored_balance.balance, in_asset_type, date)
+    self.asset_type.exchange(balance, in_asset_type, date)
   end
   
   def change_in_balance(start_date, end_date, in_asset_type)
