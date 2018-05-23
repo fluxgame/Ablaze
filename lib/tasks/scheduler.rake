@@ -10,3 +10,7 @@ end
 task :update_asset_valuations => :environment do
   AssetType.where(fetch_prices: true).each do |at| at.fetch_valuations end
 end
+
+task :update_available_to_spend => :environment do
+  User.all.each do |u| u.update_available_to_spend end
+end

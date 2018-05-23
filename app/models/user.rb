@@ -45,12 +45,12 @@ class User < ApplicationRecord
     }
   end
     
-  def update_reserved_amount
+  def update_available_to_spend
     scheduled_transactions = Transaction.where(user_id: self.id).where.not(repeat_frequency: nil)
     
-    self.minimum_balance_date = Date.today
-    self.reserved_amount = running_total = 0
-    for i in 1..365
+    minimum_balance_date = Date.today - 1
+    reserved_amount = running_total = 0
+    for i in 0..364
       scheduled_transactions.each do |st|
         if st.schedule.occurs_on?(Date.today + i.day)
           st.ledger_entries.each do |le|
@@ -61,18 +61,25 @@ class User < ApplicationRecord
         end
       end
 
-      if running_total > self.reserved_amount
-        self.reserved_amount = running_total
-        self.minimum_balance_date = Date.today + i.day
+      if running_total > reserved_amount
+        reserved_amount = running_total
+        minimum_balance_date = Date.today + i.day
       end
     end
 
+    self.available_to_spend = (self.aggregate_amounts[:current_spending_balance] - self.amount_budgeted - reserved_amount) / (minimum_balance_date - (Date.today - 1.day))
     self.save
   end
     
-  def available_to_spend 
-    self.update_reserved_amount if self.reserved_amount.nil?
-    (self.aggregate_amounts[:current_spending_balance] - self.amount_budgeted - self.reserved_amount) / (self.minimum_balance_date - Date.today)
+  def current_available_to_spend
+    self.update_available_to_spend if self.available_to_spend.nil?
+    
+    cats = self.available_to_spend
+    self.accounts.each do |account|
+      cats += account.change_in_balance(Date.today - 1.day, Date.today, self.home_asset_type) if account.spending_account?
+    end
+    
+    return cats
   end
                             
   def withdrawal_rate 

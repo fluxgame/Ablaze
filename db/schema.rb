@@ -138,8 +138,7 @@ ActiveRecord::Schema.define(version: 2018_05_23_161431) do
     t.bigint "home_asset_type_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.float "reserved_amount"
-    t.date "minimum_balance_date"
+    t.float "available_to_spend"
     t.index ["authentication_token"], name: "index_users_on_authentication_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["home_asset_type_id"], name: "index_users_on_home_asset_type_id"
