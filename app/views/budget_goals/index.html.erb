@@ -6,7 +6,7 @@
   <thead>
     <tr>
       <th>Name</th>
-      <th>Budgeted amount</th>
+      <th>Amount Remaining</th>
       <th colspan="3"></th>
     </tr>
   </thead>
@@ -15,7 +15,7 @@
     <% @budget_goals.each do |budget_goal| %>
       <tr>
         <td><%= budget_goal.name %></td>
-        <td><%= budget_goal.budgeted_amount %></td>
+        <td><%= current_user.home_asset_type.to_currency(budget_goal.remaining_amount) %></td>
         <td><%= link_to 'Show', budget_goal %></td>
         <td><%= link_to 'Edit', edit_budget_goal_path(budget_goal) %></td>
         <td><%= link_to 'Destroy', budget_goal, method: :delete, data: { confirm: 'Are you sure?' } %></td>
