@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_05_16_123719) do
+ActiveRecord::Schema.define(version: 2018_05_23_161431) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -138,6 +138,8 @@ ActiveRecord::Schema.define(version: 2018_05_16_123719) do
     t.bigint "home_asset_type_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.float "reserved_amount"
+    t.date "minimum_balance_date"
     t.index ["authentication_token"], name: "index_users_on_authentication_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["home_asset_type_id"], name: "index_users_on_home_asset_type_id"

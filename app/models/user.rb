@@ -31,7 +31,7 @@ class User < ApplicationRecord
   
   def mobile_budget_goals
     Rails.cache.fetch("#{cache_key}/mobile_budget_goals", expires_in: 15.minutes) {
-      BudgetGoal.where.not(name: ["Buffer", "Reserved"]).select{ |bg| bg.remaining_amount > 0 }
+      BudgetGoal.select{ |bg| bg.remaining_amount > 0 }
     }
   end
   
@@ -44,11 +44,12 @@ class User < ApplicationRecord
       return amount_budgeted
     }
   end
-  
-  def update_reserved_amount    
+    
+  def update_reserved_amount
     scheduled_transactions = Transaction.where(user_id: self.id).where.not(repeat_frequency: nil)
     
-    budgeted_amount = running_total = 0
+    self.minimum_balance_date = Date.today
+    self.reserved_amount = running_total = 0
     for i in 1..365
       scheduled_transactions.each do |st|
         if st.schedule.occurs_on?(Date.today + i.day)
@@ -59,34 +60,23 @@ class User < ApplicationRecord
           end
         end
       end
-      budgeted_amount = running_total if running_total > budgeted_amount
+
+      if running_total > self.reserved_amount
+        self.reserved_amount = running_total
+        self.minimum_balance_date = Date.today + i.day
+      end
     end
-    
-    rg = self.reserved_goal
-    BudgetedAmount.where(budget_goal_id: rg.id).delete_all
-    rg.budgeted_amounts.create! amount: budgeted_amount, date: Date.today
+
+    self.save
   end
-  
-  def reserved_goal
-    reserved_goal_name = "Reserved"
-    reserved_goal = BudgetGoal.where(user_id: self.id, name: reserved_goal_name).first
     
-    if reserved_goal.nil?
-      reserved_goal = BudgetGoal.new
-      reserved_goal.name = reserved_goal_name
-      reserved_goal.user_id = self.id
-      reserved_goal.save
-    end
-    
-    return reserved_goal
-  end
-  
   def available_to_spend 
-    self.aggregate_amounts[:current_spending_balance] - self.amount_budgeted
+    self.update_reserved_amount if self.reserved_amount.nil?
+    (self.aggregate_amounts[:current_spending_balance] - self.amount_budgeted - self.reserved_amount) / (self.minimum_balance_date - Date.today)
   end
                             
   def withdrawal_rate 
-    0.045
+    0.04
   end
   
   def fi_target
