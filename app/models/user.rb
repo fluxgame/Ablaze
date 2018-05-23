@@ -66,8 +66,14 @@ class User < ApplicationRecord
         minimum_balance_date = Date.today + i.day
       end
     end
-
-    self.available_to_spend = (self.aggregate_amounts[:current_spending_balance] - self.amount_budgeted - reserved_amount) / (minimum_balance_date - (Date.today - 1.day))
+    
+    self.available_to_spend = 0
+    self.accounts.each do |account|
+      self.available_to_spend += account.balance_as_of(Date.today - 1.day, self.home_asset_type) if account.spending_account?
+    end
+    self.available_to_spend -= self.amount_budgeted
+    self.available_to_spend -= reserved_amount
+    self.available_to_spend /= (minimum_balance_date - (Date.today - 1.day))
     self.save
   end
     
