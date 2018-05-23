@@ -86,7 +86,7 @@ class User < ApplicationRecord
   end
                             
   def withdrawal_rate 
-    0.04
+    0.045
   end
   
   def fi_target

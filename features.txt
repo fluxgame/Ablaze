@@ -16,7 +16,7 @@ DONE - rolling month spending by expense account
 DONE - prevent changing the date or amount of a reconciled transaction
 - reverse a reconciliation
 DONE - scheduled tasks to create scheduled transations and pull stock price
-- live updates of debit and credit totals in edit mode
+DONE - live updates of debit and credit totals in edit mode
 - implement JSON web tokens for API access
 - view account register with reconciled transactions
 - account register pagination
