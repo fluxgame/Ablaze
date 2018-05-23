@@ -50,7 +50,7 @@ class User < ApplicationRecord
     
     minimum_balance_date = Date.today - 1
     reserved_amount = running_total = 0
-    for i in 0..364
+    for i in 1..365
       scheduled_transactions.each do |st|
         if st.schedule.occurs_on?(Date.today + i.day)
           st.ledger_entries.each do |le|
@@ -67,12 +67,12 @@ class User < ApplicationRecord
       end
     end
     
-    self.available_to_spend = 0
-    self.accounts.each do |account|
-      self.available_to_spend += account.balance_as_of(Date.today - 1.day, self.home_asset_type) if account.spending_account?
-    end
+    self.available_to_spend = self.aggregate_amounts[:current_spending_balance]
+    puts "Current Balance is: " + self.aggregate_amounts[:current_spending_balance].to_s
     self.available_to_spend -= self.amount_budgeted
+    puts self.amount_budgeted.to_s + " has been budgeted"
     self.available_to_spend -= reserved_amount
+    puts "we have " + reserved_amount.to_s + " to last until " + minimum_balance_date.to_s + " (" + (minimum_balance_date - (Date.today - 1.day)).to_s + " days)"
     self.available_to_spend /= (minimum_balance_date - (Date.today - 1.day))
     self.save
   end
@@ -81,8 +81,8 @@ class User < ApplicationRecord
     self.update_available_to_spend if self.available_to_spend.nil?
     
     cats = self.available_to_spend
-    self.accounts.each do |account|
-      cats += account.change_in_balance(Date.today - 1.day, Date.today, self.home_asset_type) if account.spending_account?
+    LedgerEntry.includes(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, date: Date.today).each do |le|
+      cats -= (le.credit.nil? ? 0 : le.credit) if le.account.spending_account?
     end
     
     return cats
