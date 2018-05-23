@@ -80,7 +80,7 @@ class User < ApplicationRecord
 
   def spending_today 
     amount = 0
-    LedgerEntry.includes(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, date: Date.today).each do |le|
+    LedgerEntry.includes(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, date: Date.today, budget_goal_id: nil).each do |le|
       amount += (le.credit.nil? ? 0 : le.credit) if le.account.spending_account?
     end
     return amount
