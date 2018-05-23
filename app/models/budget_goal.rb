@@ -1,7 +1,7 @@
 class BudgetGoal < ApplicationRecord
   belongs_to :user, touch: true
   has_many :ledger_entries
-  has_many :budgeted_amounts
+  has_many :budgeted_amounts, dependent: :destroy
   
   def remaining_amount
     Rails.cache.fetch("#{cache_key}/remaining_amount", expires_in: 15.minutes) {
