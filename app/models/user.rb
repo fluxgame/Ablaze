@@ -69,6 +69,7 @@ class User < ApplicationRecord
     
     self.available_to_spend = self.aggregate_amounts[:current_spending_balance]
     puts "Current Balance is: " + self.aggregate_amounts[:current_spending_balance].to_s
+    self.available_to_spend += self.spending_today
     self.available_to_spend -= self.amount_budgeted
     puts self.amount_budgeted.to_s + " has been budgeted"
     self.available_to_spend -= reserved_amount
@@ -76,16 +77,19 @@ class User < ApplicationRecord
     self.available_to_spend /= (minimum_balance_date - (Date.today - 1.day))
     self.save
   end
-    
+
+  def spending_today 
+    amount = 0
+    LedgerEntry.includes(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, date: Date.today).each do |le|
+      amount += (le.credit.nil? ? 0 : le.credit) if le.account.spending_account?
+    end
+    return amount
+  end
+
   def current_available_to_spend
     self.update_available_to_spend if self.available_to_spend.nil?
     
-    cats = self.available_to_spend
-    LedgerEntry.includes(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, date: Date.today).each do |le|
-      cats -= (le.credit.nil? ? 0 : le.credit) if le.account.spending_account?
-    end
-    
-    return cats
+    return self.available_to_spend - self.spending_today
   end
                             
   def withdrawal_rate 

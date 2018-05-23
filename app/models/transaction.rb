@@ -15,9 +15,14 @@ class Transaction < ApplicationRecord
   before_save :verify_ledger_entries
   before_destroy :verify_not_reconciled
 
-  after_save :update_reserved_amount, :repeat_frequency?
+  after_save :update_available_to_spend
   
   def verify_ledger_entries
+    if ledger_entries.size < 2
+      errors.add(:base, "at least two ledger entries are required")
+      throw :abort
+    end
+    
     if !repeat_frequency.blank? && self.asset_types.count > 1
       errors.add(:base, "asset types must be the same for a scheduled transaction")
       throw :abort
@@ -38,8 +43,8 @@ class Transaction < ApplicationRecord
     end
   end
 
-  def update_reserved_amount
-    self.user.update_reserved_amount
+  def update_available_to_spend
+    self.user.update_available_to_spend if self.date < Date.today || self.repeat_frequency.present?
   end
 
   def schedule
