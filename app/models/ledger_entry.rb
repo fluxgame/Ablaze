@@ -10,13 +10,13 @@ class LedgerEntry < ApplicationRecord
   around_destroy :do_destroy
   
   def verify_date
-    if self.date > Date.today
+    if self.date.present? && self.date > Date.today
       puts "future transactions should be created as scheduled transaction"
       errors.add(:date, "future transactions should be created as scheduled transaction")
       throw :abort
     end
   end
-    
+      
   def after_amount_changed
     invalidate_account_balances(self.account_id, self.date)
   end
@@ -54,11 +54,13 @@ class LedgerEntry < ApplicationRecord
   
   def debit_in(dest_asset_type)
     return nil if self.debit.nil?
+    return self.debit if self.date.nil?
     return self.account.asset_type.exchange(self.debit, dest_asset_type, self.date)
   end
 
   def credit_in(dest_asset_type)
     return nil if self.credit.nil?
+    return self.credit if self.date.nil?
     return self.account.asset_type.exchange(self.credit, dest_asset_type, self.date)
   end
 end

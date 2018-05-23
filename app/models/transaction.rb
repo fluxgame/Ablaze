@@ -12,12 +12,17 @@ class Transaction < ApplicationRecord
 
   validate :repeat_frequency_is_valid
   
-  before_save :verify_balanced
+  before_save :verify_ledger_entries
   before_destroy :verify_not_reconciled
 
   after_save :update_reserved_amount, :repeat_frequency?
   
-  def verify_balanced
+  def verify_ledger_entries
+    if !repeat_frequency.blank? && self.asset_types.count > 1
+      errors.add(:base, "asset types must be the same for a scheduled transaction")
+      throw :abort
+    end
+    
     if !balanced?
       errors.add(:base, "credit and debits are out of balance")
       throw :abort
