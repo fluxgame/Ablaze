@@ -25,13 +25,25 @@ class Transaction < ApplicationRecord
     
     if !repeat_frequency.blank? && self.asset_types.count > 1
       errors.add(:base, "asset types must be the same for a scheduled transaction")
-      throw :abort
     end
     
-    if !balanced?
-      errors.add(:base, "credit and debits are out of balance")
-      throw :abort
+    errors.add(:base, "credit and debits are out of balance") if !balanced?
+    
+    contains_budgeted_expense = false
+    contains_non_spending_account = false
+    ledger_entries.each do |le|
+      if le.budget_goal_id.present?
+        contains_budgeted_expense = true
+      elsif le.account.account_type.master_account_type != :expense && !le.account.spending_account?
+        contains_non_spending_account = true if le.account.account_type
+      end
     end
+    
+    if contains_budgeted_expense && contains_non_spending_account
+      errors.add(:base, "budgeted spending should only happen from spending accounts")
+    end
+
+    throw :abort if errors.count > 0
   end
   
   def verify_not_reconciled

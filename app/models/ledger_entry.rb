@@ -5,16 +5,24 @@ class LedgerEntry < ApplicationRecord
   belongs_to :account_reconciliation, optional: true
   belongs_to :account_balance, optional: true
   
-  before_save :verify_date
+  before_save :verify_self
   after_save :after_amount_changed, :credit_changed? || :debit_changed?
   around_destroy :do_destroy
   
-  def verify_date
+  def verify_self
     if self.date.present? && self.date > Date.today
-      puts "future transactions should be created as scheduled transaction"
       errors.add(:date, "future transactions should be created as scheduled transaction")
-      throw :abort
     end
+    
+    if self.budget_goal_id.present? && self.account.spending_account?
+      errors.add(:base, "budget goals shouldn't be added to spending accounts") 
+    end
+    
+    if self.budget_goal_id.present? && self.parent_transaction.repeat_frequency.present?
+      errors.add(:base, "budgeted spending can't happen in a scheduled transactions") 
+    end
+
+    throw :abort if errors.count > 0
   end
       
   def after_amount_changed
