@@ -11,8 +11,8 @@ class Transaction < ApplicationRecord
   nilify_blanks :only => [:repeat_frequency]
 
   validate :repeat_frequency_is_valid
+  validate :verify_ledger_entries
   
-  before_save :verify_ledger_entries
   before_destroy :verify_not_reconciled
 
   after_save :update_available_to_spend
@@ -27,7 +27,9 @@ class Transaction < ApplicationRecord
       errors.add(:base, "asset types must be the same for a scheduled transaction")
     end
     
-    errors.add(:base, "credit and debits are out of balance") if !balanced?
+    if !balanced?
+      errors.add(:base, "credits and debits are out of balance")
+    end
     
     contains_budgeted_expense = false
     contains_non_spending_account = false
@@ -42,8 +44,6 @@ class Transaction < ApplicationRecord
     if contains_budgeted_expense && contains_non_spending_account
       errors.add(:base, "budgeted spending should only happen from spending accounts")
     end
-
-    throw :abort if errors.count > 0
   end
   
   def verify_not_reconciled
@@ -137,7 +137,7 @@ class Transaction < ApplicationRecord
     
   def total_credits(asset_type)
     total = 0
-    ledger_entries.each do |le|
+    ledger_entries.select{ |le| le._destroy != true }.each do |le|
       credit = le.credit_in(asset_type)
       total += credit.nil? ? 0 : credit
     end
@@ -146,7 +146,7 @@ class Transaction < ApplicationRecord
   
   def total_debits(asset_type)
     total = 0
-    ledger_entries.each do |le|
+    ledger_entries.select{ |le| le._destroy != true }.each do |le|
       debit = le.debit_in(asset_type)
       total += debit.nil? ? 0 : debit
     end
