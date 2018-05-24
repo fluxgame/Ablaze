@@ -102,7 +102,11 @@ class Account < ApplicationRecord
   def spending_account?
     self.account_type.name == "Bank" || self.account_type.name == "Current Liability"
   end
-      
+  
+  def asset_or_liability?
+    [:asset, :liability].include?(self.account_type.master_account_type.to_sym)
+  end
+  
   def import_ofx
     clearing_account = Account.where(name: 'Clearing').first
     
