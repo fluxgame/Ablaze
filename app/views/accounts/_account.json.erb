@@ -2,5 +2,7 @@
 	"id": "<%= account.id %>",  
 	"name": "<%= account.name %>"<% if account.account_type.master_account_type.to_sym == :expense %>,
 	"averageMonthlySpending": "<%= account.average_monthly_spending.round(account.asset_type.precision) %>",
-	"lastMonthsSpending": "<%= account.last_months_spending.round(account.asset_type.precision) %>"<% end %>
+	"lastMonthsSpending": "<%= account.last_months_spending.round(account.asset_type.precision) %>"
+	<% elsif account.spending_account? %>,
+	"currentBalance": "<%= account.current_balance.round(account.asset_type.precision) %>"<% end %>
 }
