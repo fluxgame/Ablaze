@@ -56,7 +56,7 @@ class Transaction < ApplicationRecord
   end
 
   def update_available_to_spend
-    self.user.update_available_to_spend if self.date < Date.today || self.repeat_frequency.present?
+    self.user.update_available_to_spend if self.repeat_frequency.present? || self.date < Date.today
   end
 
   def schedule
