@@ -102,13 +102,13 @@ class User < ApplicationRecord
     0.04
   end
   
-  def fi_target
-    self.aggregate_amounts[:post_fi_expenses] / self.withdrawal_rate
+  def fi_target(annual_spending = self.aggregate_amounts[:post_fi_expenses])
+    annual_spending / self.withdrawal_rate
   end
   
-  def years_to_fi
+  def years_to_fi(annual_spending = self.aggregate_amounts[:post_fi_expenses])
     begin
-      Exonio.nper(self.aggregate_amounts[:average_rate_of_return], self.aggregate_amounts[:savings] * -1, self.aggregate_amounts[:net_worth] * -1, self.fi_target)
+      Exonio.nper(self.aggregate_amounts[:average_rate_of_return], self.aggregate_amounts[:savings] * -1, self.aggregate_amounts[:net_worth] * -1, self.fi_target(annual_spending))
     rescue
       nil
     end
@@ -119,9 +119,9 @@ class User < ApplicationRecord
     return first_transaction.date if first_transaction.present?
   end
     
-  def fi_date
-    return nil if self.years_to_fi.nil?
-    ytfi = self.years_to_fi
+  def fi_date(annual_spending = self.aggregate_amounts[:post_fi_expenses])
+    return nil if self.years_to_fi(annual_spending).nil?
+    ytfi = self.years_to_fi(annual_spending)
     date = Date.today
     date += ytfi.floor.years
     ytfi = (ytfi - ytfi.floor) * 365    
@@ -139,7 +139,8 @@ class User < ApplicationRecord
   def aggregate_amounts
     Rails.cache.fetch("#{cache_key}/aggregate_amounts", expires_in: 15.minutes) {
       am = {
-        post_fi_expenses: 0.0, 
+        post_fi_expenses: 0.0,
+        lean_fi_expenses: 0.0,
         expenses: 0.0, 
         savings: 0.0, 
         active_income: 0.0, 
@@ -163,8 +164,7 @@ class User < ApplicationRecord
             am[:savings] -= avg_annual_spend
             am[:expenses] += avg_annual_spend
             am[:post_fi_expenses] += [avg_annual_spend, account.fi_budget * 12].max if account.post_fi_expense?
-            puts "FI Budget: " + (account.fi_budget * 12).to_s
-            puts "Post FI Expenses: " + am[:post_fi_expenses].to_s
+            am[:lean_fi_expenses] += (account.fi_budget * 12)
           elsif account.name == "Active Income"
             avg_annual_spend = account.average_monthly_spending(self.home_asset_type) * 12
             puts "Average Annual Spend: " + avg_annual_spend.to_s
@@ -184,17 +184,19 @@ class User < ApplicationRecord
            
       am[:net_worth] = am[:assets] + am[:liabilities]
       am[:average_rate_of_return] /= am[:net_worth]
-        
-      federal_tax_rate = 0.1
-      state_tax_rate = 0.051
-    
-      federal_deduction = 24000
-      state_deduction = 8800
-    
-      am[:post_fi_expenses] = (am[:post_fi_expenses] - federal_deduction * federal_tax_rate - state_deduction * state_tax_rate) / (1 - federal_tax_rate - state_tax_rate)
-#        am[:average_rate_of_return] = 0.07
-            
+      am[:post_fi_expenses] = adjust_for_taxes(am[:post_fi_expenses])
+      am[:lean_fi_expenses] = adjust_for_taxes(am[:lean_fi_expenses])
       am
     }
+  end
+  
+  def adjust_for_taxes(annual_spending)
+    federal_tax_rate = 0.1
+    state_tax_rate = 0.051
+  
+    federal_deduction = 24000
+    state_deduction = 8800
+    
+    (annual_spending - federal_deduction * federal_tax_rate - state_deduction * state_tax_rate) / (1 - federal_tax_rate - state_tax_rate)
   end
 end
