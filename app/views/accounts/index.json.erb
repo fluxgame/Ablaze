@@ -1,0 +1,10 @@
+{
+	"accounts": {
+		"expense": [
+			<%= current_user.mobile_expense_accounts.map { |a| render a }.join(", ").html_safe %>
+		],
+		"spending": [
+			<%= current_user.mobile_spending_accounts.map { |a| render a }.join(", ").html_safe %>
+		]
+	}
+}

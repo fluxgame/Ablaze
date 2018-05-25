@@ -1,5 +1,5 @@
 { 
 	"id": "<%= budget_goal.id %>",  
-	"name": "<%= budget_goal.name %>",
-	"remainingAmount": "<%= budget_goal.remaining_amount %>"
+	"name": "<%= budget_goal.name %>"<% if !local_assigns[:simple] %>,
+	"remainingAmount": "<%= budget_goal.remaining_amount %>"<% end %>
 }

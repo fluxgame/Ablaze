@@ -1,0 +1,5 @@
+{
+	"budgetGoals": [
+		<%= current_user.mobile_budget_goals.map { |bg| render bg }.join(", ").html_safe %>
+	]
+}

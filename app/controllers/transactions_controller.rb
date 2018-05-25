@@ -39,7 +39,7 @@ class TransactionsController < ApplicationController
     respond_to do |format|
       if @transaction.save
         format.html { redirect_to @transaction, notice: 'Transaction was successfully created.' }
-        format.json { render json: @transaction, status: :ok }
+        format.json { render :show, status: :ok }
       else
         format.html { render :new }
         format.json { render json: @transaction.errors, status: :unprocessable_entity }
@@ -60,7 +60,7 @@ class TransactionsController < ApplicationController
       
       if @transaction.save
         format.html { redirect_to @transaction, notice: 'Transaction was successfully updated.' }
-        format.json { render json: @transaction, status: :ok }
+        format.json { render :show, status: :ok }
       else
         format.html { render :edit }
         format.json { render json: @transaction.errors, status: :unprocessable_entity }
