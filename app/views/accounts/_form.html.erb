@@ -22,6 +22,11 @@
   </div>
 
   <div class="field">
+    <%= form.label :fi_budget %>
+    <%= form.text_field :fi_budget, id: :account_fi_budget %>
+  </div>
+
+  <div class="field">
     <%= form.label :asset_type_id %>
 	<%= form.select :asset_type_id, AssetType.all.map{|s|[s.name, s.id]} %>
   </div>

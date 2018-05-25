@@ -19,7 +19,7 @@ class User < ApplicationRecord
   
   def expense_accounts
     Rails.cache.fetch("#{cache_key}/expense_accounts", expires_in: 15.minutes) {
-      Account.where(user_id: self.id).joins(:account_type).where(account_types: {master_account_type: :expense})
+      Account.where(user_id: self.id).joins(:account_type).where(account_types: {master_account_type: [:expense, :income]})
     }
   end    
   
@@ -149,51 +149,50 @@ class User < ApplicationRecord
         net_worth: 0.0,
         current_spending_balance: 0
       }
-
-#      first_transaction_date = self.first_transaction_date
-      first_transaction_date = Date.new(2018,1,1)
       
-      if !first_transaction_date.nil?
-        self.accounts.each do |account|
+      self.accounts.each do |account|
+        puts "\n\nAccount: " + account.name
+        puts "Post FI Expenses: " + am[:post_fi_expenses].to_s
+        years_of_transactions = account.years_of_transactions
+        if years_of_transactions > 0
           account_type = account.account_type.master_account_type.to_sym
-          
-          if account_type == :expense || account.name == "Active Income"
-            annual_amount = account.change_in_balance(Date.today - 1.year, Date.today, self.home_asset_type)
-            am[:savings] -= annual_amount
-            if account.name == "Active Income"
-              am[:active_income] -= annual_amount 
-            else
-              am[:expenses] += annual_amount
-              am[:post_fi_expenses] += annual_amount if account.post_fi_expense?
-            end
+
+          if account_type == :expense
+            avg_annual_spend = account.average_monthly_spending(self.home_asset_type) * 12
+            puts "Average Annual Spend: " + avg_annual_spend.to_s
+            am[:savings] -= avg_annual_spend
+            am[:expenses] += avg_annual_spend
+            am[:post_fi_expenses] += [avg_annual_spend, account.fi_budget * 12].max if account.post_fi_expense?
+            puts "FI Budget: " + (account.fi_budget * 12).to_s
+            puts "Post FI Expenses: " + am[:post_fi_expenses].to_s
+          elsif account.name == "Active Income"
+            avg_annual_spend = account.average_monthly_spending(self.home_asset_type) * 12
+            puts "Average Annual Spend: " + avg_annual_spend.to_s
+            am[:savings] -= avg_annual_spend
+            am[:active_income] -= avg_annual_spend
           elsif [:asset, :liability].include?(account_type)
-            puts account.name
             account_balance = account.current_balance(self.home_asset_type)
-            am[:average_rate_of_return] += account.expected_annual_return * (account_balance.nil? ? 0 : account_balance)
-            am[:assets] += account_balance if account_type == :asset
-            am[:liabilities] += account_balance if account_type == :liability
-            am[:current_spending_balance] += account_balance if account.spending_account?
+            if account_balance.present?
+              am[:average_rate_of_return] += (account.expected_annual_return * account_balance)
+              am[:assets] += account_balance if account_type == :asset
+              am[:liabilities] += account_balance if account_type == :liability
+              am[:current_spending_balance] += account_balance if account.spending_account?
+            end
           end
         end
+      end
+           
+      am[:net_worth] = am[:assets] + am[:liabilities]
+      am[:average_rate_of_return] /= am[:net_worth]
         
-        years_of_transactions = (Date.today - first_transaction_date) / 365
-        am[:savings] /= years_of_transactions
-        am[:expenses] /= years_of_transactions
-        am[:post_fi_expenses] /= years_of_transactions
-        am[:active_income] /= years_of_transactions
-   
-        am[:net_worth] = am[:assets] + am[:liabilities]
-        am[:average_rate_of_return] /= am[:net_worth]
-        
-        federal_tax_rate = 0.1
-        state_tax_rate = 0.051
+      federal_tax_rate = 0.1
+      state_tax_rate = 0.051
     
-        federal_deduction = 24000
-        state_deduction = 8800
+      federal_deduction = 24000
+      state_deduction = 8800
     
-        am[:post_fi_expenses] = (am[:post_fi_expenses] - federal_deduction * federal_tax_rate - state_deduction * state_tax_rate) / (1 - federal_tax_rate - state_tax_rate)
+      am[:post_fi_expenses] = (am[:post_fi_expenses] - federal_deduction * federal_tax_rate - state_deduction * state_tax_rate) / (1 - federal_tax_rate - state_tax_rate)
 #        am[:average_rate_of_return] = 0.07
-      end      
             
       am
     }

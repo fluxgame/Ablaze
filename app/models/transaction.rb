@@ -33,7 +33,7 @@ class Transaction < ApplicationRecord
     
     contains_budgeted_expense = false
     contains_non_spending_account = false
-    ledger_entries.each do |le|
+    active_ledger_entries.each do |le|
       if le.budget_goal_id.present?
         contains_budgeted_expense = true
       elsif le.account.account_type.master_account_type != :expense && !le.account.spending_account?
@@ -47,7 +47,7 @@ class Transaction < ApplicationRecord
   end
   
   def verify_not_reconciled
-    ledger_entries.each do |le|
+    active_ledger_entries.each do |le|
       if le.reconciled?
         errors.add(:base, "can't delete a transaction with reconciled entries")
         throw :abort
@@ -93,7 +93,7 @@ class Transaction < ApplicationRecord
           transaction.prototype_transaction_id = self.id
           transaction.save
         
-          self.ledger_entries.each do |ledger_entry|
+          self.active_ledger_entries.each do |ledger_entry|
             le = ledger_entry.dup
             le.transaction_id = transaction.id
             le.account_reconciliation_id = nil
@@ -123,7 +123,7 @@ class Transaction < ApplicationRecord
   
   def asset_types
     asset_types = []
-    ledger_entries.each do |le|
+    active_ledger_entries.each do |le|
       asset_type = le.account.asset_type.id
       asset_types.push(asset_type) if !asset_types.include? asset_type
     end
@@ -131,13 +131,13 @@ class Transaction < ApplicationRecord
   end
   
   def date
-    return ledger_entries.first.date if ledger_entries.size > 0
+    return active_ledger_entries.first.date if active_ledger_entries.size > 0
     nil
   end
     
   def total_credits(asset_type)
     total = 0
-    ledger_entries.select{ |le| le._destroy != true }.each do |le|
+    active_ledger_entries.each do |le|
       credit = le.credit_in(asset_type)
       total += credit.nil? ? 0 : credit
     end
@@ -146,11 +146,15 @@ class Transaction < ApplicationRecord
   
   def total_debits(asset_type)
     total = 0
-    ledger_entries.select{ |le| le._destroy != true }.each do |le|
+    active_ledger_entries.each do |le|
       debit = le.debit_in(asset_type)
       total += debit.nil? ? 0 : debit
     end
     total.round(asset_type.precision)
+  end
+  
+  def active_ledger_entries
+    ledger_entries.select{ |le| le._destroy != true }
   end
   
   def cleanup_ledger_entries

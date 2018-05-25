@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_05_23_161431) do
+ActiveRecord::Schema.define(version: 2018_05_25_120025) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -49,6 +49,7 @@ ActiveRecord::Schema.define(version: 2018_05_23_161431) do
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.float "fi_budget", default: 0.0, null: false
     t.index ["account_type_id"], name: "index_accounts_on_account_type_id"
     t.index ["asset_type_id"], name: "index_accounts_on_asset_type_id"
     t.index ["user_id"], name: "index_accounts_on_user_id"
@@ -112,6 +113,15 @@ ActiveRecord::Schema.define(version: 2018_05_23_161431) do
     t.index ["transaction_id"], name: "index_ledger_entries_on_transaction_id"
   end
 
+  create_table "plaid_items", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.integer "item_id", null: false
+    t.string "access_token", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_plaid_items_on_user_id"
+  end
+
   create_table "transactions", force: :cascade do |t|
     t.string "description"
     t.string "repeat_frequency"
@@ -159,6 +169,7 @@ ActiveRecord::Schema.define(version: 2018_05_23_161431) do
   add_foreign_key "ledger_entries", "accounts"
   add_foreign_key "ledger_entries", "budget_goals"
   add_foreign_key "ledger_entries", "transactions"
+  add_foreign_key "plaid_items", "users"
   add_foreign_key "transactions", "transactions", column: "prototype_transaction_id"
   add_foreign_key "transactions", "users"
   add_foreign_key "users", "asset_types", column: "home_asset_type_id"

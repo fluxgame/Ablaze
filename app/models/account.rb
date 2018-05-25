@@ -69,7 +69,7 @@ class Account < ApplicationRecord
   end
   
   def years_of_transactions
-    first_transaction = LedgerEntry.where(account_id: self.id).order(date: :asc).first
+    first_transaction = LedgerEntry.where(account_id: self.id).where.not(date: nil).order(date: :asc).first
     if first_transaction.nil?
       return 0
     else
