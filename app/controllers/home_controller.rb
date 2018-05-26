@@ -1,8 +1,4 @@
-class HomeController < ApplicationController  
-  def index
-#    Transaction.includes(:ledger_entries).where(user_id: current_user.id, ledger_entries: {id: nil}).destroy_all
-  end
-
+class HomeController < ApplicationController
   def net_worth
     puts "Net Worth Report"
     @net_worth_report = []

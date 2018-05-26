@@ -19,7 +19,7 @@ class User < ApplicationRecord
   
   def expense_accounts
     Rails.cache.fetch("#{cache_key}/expense_accounts", expires_in: 15.minutes) {
-      Account.where(user_id: self.id).joins(:account_type).where(account_types: {master_account_type: [:expense, :income]})
+      Account.where(user_id: self.id).joins(:account_type).where(account_types: {master_account_type: :expense})
     }
   end    
   
@@ -141,6 +141,8 @@ class User < ApplicationRecord
       am = {
         post_fi_expenses: 0.0,
         lean_fi_expenses: 0.0,
+        post_fi_expenses_pre_tax: 0.0,
+        lean_fi_expenses_pre_tax: 0.0,
         expenses: 0.0, 
         savings: 0.0, 
         active_income: 0.0, 
@@ -163,8 +165,8 @@ class User < ApplicationRecord
             puts "Average Annual Spend: " + avg_annual_spend.to_s
             am[:savings] -= avg_annual_spend
             am[:expenses] += avg_annual_spend
-            am[:post_fi_expenses] += [avg_annual_spend, account.fi_budget * 12].max if account.post_fi_expense?
-            am[:lean_fi_expenses] += (account.fi_budget * 12)
+            am[:post_fi_expenses_pre_tax] += [avg_annual_spend, account.fi_budget * 12].max if account.post_fi_expense?
+            am[:lean_fi_expenses_pre_tax] += (account.fi_budget * 12)
           elsif account.name == "Active Income"
             avg_annual_spend = account.average_monthly_spending(self.home_asset_type) * 12
             puts "Average Annual Spend: " + avg_annual_spend.to_s
@@ -184,8 +186,8 @@ class User < ApplicationRecord
            
       am[:net_worth] = am[:assets] + am[:liabilities]
       am[:average_rate_of_return] /= am[:net_worth]
-      am[:post_fi_expenses] = adjust_for_taxes(am[:post_fi_expenses])
-      am[:lean_fi_expenses] = adjust_for_taxes(am[:lean_fi_expenses])
+      am[:post_fi_expenses] = adjust_for_taxes(am[:post_fi_expenses_pre_tax])
+      am[:lean_fi_expenses] = adjust_for_taxes(am[:lean_fi_expenses_pre_tax])
       am
     }
   end
@@ -198,5 +200,9 @@ class User < ApplicationRecord
     state_deduction = 8800
     
     (annual_spending - federal_deduction * federal_tax_rate - state_deduction * state_tax_rate) / (1 - federal_tax_rate - state_tax_rate)
+  end
+  
+  def fi_statistics
+    
   end
 end

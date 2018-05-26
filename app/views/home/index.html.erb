@@ -6,28 +6,6 @@
 <p>Annual Post-FI Expenses: <%= current_user.home_asset_type.to_currency(current_user.aggregate_amounts[:post_fi_expenses]) %></p>
 <p>Annual Active Income: <%= current_user.home_asset_type.to_currency(current_user.aggregate_amounts[:active_income]) %></p>
 <p>Annual Expenses: <%= current_user.home_asset_type.to_currency(current_user.aggregate_amounts[:expenses]) %></p>
-<table>
-	<thead>
-		<tr>
-			<th>Expense</th>
-			<th>Rolling Month's Spending</th>
-			<th>Average Monthly Spending</th>
-			<th>Total Spending</th>
-			<th>Years of Expenses</th>
-		</tr>
-	</thead>
-	<tbody>
-		<% current_user.expense_accounts.each do |a| %>
-		<tr>
-			<td><%= a.name %></td>
-			<td><%= current_user.home_asset_type.to_currency(a.last_months_spending(current_user.home_asset_type)) %></td>
-			<td><%= current_user.home_asset_type.to_currency(a.average_monthly_spending(current_user.home_asset_type)) %></td>
-			<td><%= current_user.home_asset_type.to_currency(a.current_balance(current_user.home_asset_type))%></td>
-			<td><%= a.years_of_transactions %></td>
-		</tr>
-		<% end %>
-	</tbody>
-</table>
 <p>Annual Savings: <%= current_user.home_asset_type.to_currency(current_user.aggregate_amounts[:savings]) %></p>
 <p>Savings Rate: <%= (current_user.aggregate_amounts[:savings] / current_user.aggregate_amounts[:active_income] * 100).round %>%</p>
 <p>FI Target: <%= current_user.home_asset_type.to_currency(current_user.fi_target) %></p>

@@ -3,7 +3,7 @@ Rails.application.routes.draw do
   resources :asset_valuations
   get 'home/index'
   get 'home/net_worth'
-  get 'home/mobile_sim'
+  get 'home/fi_statistics'
   
   resources :future_account_balances
   resources :account_reconciliations
