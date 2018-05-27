@@ -2,7 +2,7 @@
 <% days_to_full_fi = current_user.years_to_fi(current_user.aggregate_amounts[:post_fi_expenses]) * 365 %>
 <% days_per_dollar = (days_to_full_fi - days_to_lean_fi) / (current_user.aggregate_amounts[:post_fi_expenses_pre_tax] - current_user.aggregate_amounts[:lean_fi_expenses_pre_tax]) %>
 {
-	"leanFIDate": "<%= current_user.fi_date(current_user.aggregate_amounts[:lean_fi_expenses]).to_formatted_s(:long_ordinal) if current_user.fi_date(current_user.aggregate_amounts[:lean_fi_expenses]).present? %>"
+	"leanFIDate": "<%= current_user.fi_date(current_user.aggregate_amounts[:lean_fi_expenses]).to_formatted_s(:long_ordinal) if current_user.fi_date(current_user.aggregate_amounts[:lean_fi_expenses]).present? %>",
 	"fiDate": "<%= current_user.fi_date.to_formatted_s(:long_ordinal) if current_user.fi_date.present? %>",
 	"expenseAccounts": [
 			<%= current_user.mobile_expense_accounts.map { |a| 

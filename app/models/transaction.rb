@@ -156,30 +156,7 @@ class Transaction < ApplicationRecord
   def active_ledger_entries
     ledger_entries.select{ |le| le._destroy != true }
   end
-  
-  def cleanup_ledger_entries
-    t = self.dup
-    t.save
     
-    ledger_entries.each do |le|
-      found = false
-      t.ledger_entries.each do |new_le|
-        if new_le.account.id == le.account.id
-          new_le.credit += le.credit
-          new_le.debit += le.debit
-          new_le.save
-          found = true
-        end
-      end
-      
-      if !found
-        le.dup
-        le.transaction_id = t.id
-        le.save
-      end
-    end
-  end
-  
   private
   
   def repeat_frequency_is_valid
