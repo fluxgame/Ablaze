@@ -71,6 +71,12 @@ class LedgerEntry < ApplicationRecord
     return self.credit if self.date.nil?
     return self.account.asset_type.exchange(self.credit, dest_asset_type, self.date)
   end
+  
+  def amount_in(dest_asset_type = self.account.asset_type)
+    _debit = debit_in(dest_asset_type)
+    _credit = credit_in(dest_asset_type)
+    (_debit.nil? ? 0 : _debit) - (_credit.nil? ? 0 : _credit)
+  end
 end
 
 

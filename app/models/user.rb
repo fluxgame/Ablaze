@@ -77,16 +77,13 @@ class User < ApplicationRecord
   end
 
   def spending_today
-    amount = 0
+    spending = 0
     LedgerEntry.includes(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, date: Date.today).each do |le|
-      amount += (le.credit.nil? ? 0 : le.credit) if le.account.spending_account?
-      spending_debits = 0
-      le.linked_entries.each do |sle|
-        spending_debits += (le.debit.nil? ? 0 : le.debit) if sle.account.spending_account?
-      end
-      amount -= spending_debits
+      amount = le.amount_in(self.home_asset_type)
+      spending -= amount if le.account.spending_account?
+      spending += amount if le.account.account_type.master_account_type == :income
     end
-    return amount
+    return spending
   end
   
   def budgeted_spending_today
