@@ -1,6 +1,3 @@
-<% days_to_lean_fi = current_user.years_to_fi(current_user.aggregate_amounts[:lean_fi_expenses]) * 365 %>
-<% days_to_full_fi = current_user.years_to_fi(current_user.aggregate_amounts[:post_fi_expenses]) * 365 %>
-<% days_per_dollar = (days_to_full_fi - days_to_lean_fi) / (current_user.aggregate_amounts[:post_fi_expenses_pre_tax] - current_user.aggregate_amounts[:lean_fi_expenses_pre_tax]) %>
 {
 	"leanFIDate": "<%= current_user.fi_date(current_user.aggregate_amounts[:lean_fi_expenses]).to_formatted_s(:long_ordinal) if current_user.fi_date(current_user.aggregate_amounts[:lean_fi_expenses]).present? %>",
 	"fiDate": "<%= current_user.fi_date.to_formatted_s(:long_ordinal) if current_user.fi_date.present? %>",
@@ -9,7 +6,7 @@
 				'{"name": "' + a.name + '",' +
 				'"averageMonthlySpending": "' + a.average_monthly_spending.round(a.asset_type.precision).to_s + '",' +
 				'"lastMonthsSpending": "' + a.last_months_spending.round(a.asset_type.precision).to_s + '",' +
-				'"daysOfWork": "' + (a.post_fi_expense? ? (12 * days_per_dollar * ([0, a.average_monthly_spending(current_user.home_asset_type) - a.fi_budget].max)).round(0) : 0).to_s  + '"}'
+				'"daysOfWork": "' + current_user.days_of_work(a).to_s  + '"}'
 			}.join(", ").html_safe %>
 	]
 }

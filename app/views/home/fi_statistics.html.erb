@@ -1,8 +1,5 @@
-<% days_to_lean_fi = current_user.years_to_fi(current_user.aggregate_amounts[:lean_fi_expenses]) * 365 %>
-<% days_to_full_fi = current_user.years_to_fi(current_user.aggregate_amounts[:post_fi_expenses]) * 365 %>
-<% days_per_dollar = (days_to_full_fi - days_to_lean_fi) / (current_user.aggregate_amounts[:post_fi_expenses_pre_tax] - current_user.aggregate_amounts[:lean_fi_expenses_pre_tax]) %>
-<p>Days to Lean FI: <%= days_to_lean_fi %></p>
-<p>Days to Full FI: <%= days_to_full_fi %></p>
+<p>Lean FI Date: <%= current_user.fi_date(current_user.aggregate_amounts[:lean_fi_expenses]) %></p>
+<p>Full FI Date: <%= current_user.fi_date %></p>
 <table>
 	<thead>
 		<tr>
@@ -18,7 +15,7 @@
 			<td><%= a.name %></td>
 			<td><%= current_user.home_asset_type.to_currency(a.last_months_spending(current_user.home_asset_type)) %></td>
 			<td><%= current_user.home_asset_type.to_currency(a.average_monthly_spending(current_user.home_asset_type)) %></td>
-			<td><%= a.post_fi_expense? ? (12 * days_per_dollar * ([0, a.average_monthly_spending(current_user.home_asset_type) - a.fi_budget].max)).round(0) : 0 %>
+			<td><%= current_user.days_of_work(a) %>
 		</tr>
 		<% end %>
 	</tbody>

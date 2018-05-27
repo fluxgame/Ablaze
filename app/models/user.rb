@@ -69,7 +69,6 @@ class User < ApplicationRecord
     
     self.available_to_spend = self.aggregate_amounts[:current_spending_balance]
     self.available_to_spend += self.spending_today
-    self.available_to_spend -= self.budgeted_spending_today
     self.available_to_spend -= self.amount_budgeted
     self.available_to_spend -= reserved_amount
     self.available_to_spend /= (minimum_balance_date - Date.today + 1)
@@ -82,22 +81,15 @@ class User < ApplicationRecord
       amount = le.amount_in(self.home_asset_type)
       spending -= amount if le.account.spending_account?
       spending += amount if le.account.account_type.master_account_type == :income
+      spending -= amount if !le.budget_goal_id.nil?
     end
     return spending
   end
   
-  def budgeted_spending_today
-    amount = 0
-    LedgerEntry.where(date: Date.today).where.not(budget_goal_id: nil).each do |le|
-      amount += (le.debit.nil? ? 0 : le.debit)
-    end
-    return amount
-  end
-
   def current_available_to_spend
     self.update_available_to_spend if self.available_to_spend.nil?
     
-    return self.available_to_spend - self.spending_today + self.budgeted_spending_today
+    return self.available_to_spend - self.spending_today
   end
                             
   def withdrawal_rate 
@@ -203,8 +195,13 @@ class User < ApplicationRecord
     
     (annual_spending - federal_deduction * federal_tax_rate - state_deduction * state_tax_rate) / (1 - federal_tax_rate - state_tax_rate)
   end
-  
-  def fi_statistics
+
+  def days_of_work(account)
+    return 0 if !account.post_fi_expense?
     
+    days_to_lean_fi = self.years_to_fi(self.aggregate_amounts[:lean_fi_expenses]) * 365
+    days_to_full_fi = self.years_to_fi(self.aggregate_amounts[:post_fi_expenses]) * 365
+    days_per_dollar = (days_to_full_fi - days_to_lean_fi) / (self.aggregate_amounts[:post_fi_expenses_pre_tax] - self.aggregate_amounts[:lean_fi_expenses_pre_tax])
+    return (12 * days_per_dollar * ([0, account.average_monthly_spending(self.home_asset_type) - account.fi_budget].max)).round(0)
   end
 end
