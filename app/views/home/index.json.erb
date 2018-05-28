@@ -1,4 +1,4 @@
 {
 	"availableToSpend": "<%= current_user.available_to_spend_today.round(current_user.home_asset_type.precision) %>", 
-	"fiDate": "<%= current_user.fi_date.to_formatted_s(:long_ordinal) if current_user.fi_date.present? %>"
+	"fiDate": "<%= current_user.fi_date.to_s if current_user.fi_date.present? %>"
 }
