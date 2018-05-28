@@ -5,11 +5,10 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :trackable, :validatable
 
   has_many :accounts
-  has_many :setting, :through => :user_settings
-  has_many :ledger_entries
+  has_many :transactions
+  has_many :budget_goals
   
   belongs_to :home_asset_type, class_name: 'AssetType'
-  has_many :budget_goals
 
   def mobile_expense_accounts
     Rails.cache.fetch("#{cache_key}/mobile_expense_accounts", expires_in: 15.minutes) {
@@ -45,11 +44,11 @@ class User < ApplicationRecord
     }
   end
     
-  def update_available_to_spend
+  def update_reserved_amount
     scheduled_transactions = Transaction.where(user_id: self.id).where.not(repeat_frequency: nil)
     
-    minimum_balance_date = Date.today - 1
-    reserved_amount = running_total = 0
+    self.min_balance_date = Date.today - 1
+    self.reserved_amount = running_total = 0
     for i in 1..365
       scheduled_transactions.each do |st|
         if st.schedule.occurs_on?(Date.today + i.day)
@@ -61,37 +60,47 @@ class User < ApplicationRecord
         end
       end
 
-      if running_total > reserved_amount
-        reserved_amount = running_total
-        minimum_balance_date = Date.today + i.day
+      if running_total > self.reserved_amount
+        self.reserved_amount = running_total
+        self.min_balance_date = Date.today + i.day
       end
     end
     
-    self.available_to_spend = self.aggregate_amounts[:current_spending_balance]
-    self.available_to_spend += self.spending_today
-    self.available_to_spend -= self.amount_budgeted
-    self.available_to_spend -= reserved_amount
-    self.available_to_spend /= (minimum_balance_date - Date.today + 1)
     self.save
   end
-
-  def spending_today
-    spending = 0
-    LedgerEntry.includes(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, date: Date.today).each do |le|
-      amount = le.amount_in(self.home_asset_type)
-      spending -= amount if le.account.spending_account?
-      spending += amount if le.account.account_type.master_account_type == :income
-      spending -= amount if !le.budget_goal_id.nil?
-    end
-    return spending
+  
+  def spendable_at_start_of_today
+    ats = self.aggregate_amounts[:current_spending_balance]
+    ats += self.spending_today
   end
   
-  def current_available_to_spend
-    self.update_available_to_spend if self.available_to_spend.nil?
+  def available_to_spend  
+    self.update_reserved_amount if self.reserved_amount.nil?
     
-    return self.available_to_spend - self.spending_today
+    ats = self.spendable_at_start_of_today
+    ats -= self.amount_budgeted
+    ats -= self.reserved_amount
   end
-                            
+  
+  def available_to_spend_today
+    atst = self.available_to_spend
+    atst /= (self.min_balance_date - Date.today + 1)
+    atst -= self.spending_today
+  end    
+
+  def spending_today
+    Rails.cache.fetch("#{cache_key}/spending_today", expires_in: 1.minute) {
+      spending = 0
+      LedgerEntry.includes(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, date: Date.today).each do |le|
+        amount = le.amount_in(self.home_asset_type)
+        spending -= amount if le.account.spending_account?
+        spending += amount if le.account.account_type.master_account_type == :income
+        spending -= amount if !le.budget_goal_id.nil?
+      end
+      return spending
+    }
+  end
+                              
   def withdrawal_rate 
     0.04
   end

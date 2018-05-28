@@ -1,5 +1,5 @@
 class Transaction < ApplicationRecord
-  belongs_to :user
+  belongs_to :user, touch: true
   
   has_many :transaction_copies, class_name: "Transaction",
                             foreign_key: "prototype_transaction_id"

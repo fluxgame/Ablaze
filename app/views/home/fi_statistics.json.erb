@@ -1,12 +1,11 @@
 {
 	"leanFIDate": "<%= current_user.fi_date(current_user.aggregate_amounts[:lean_fi_expenses]).to_formatted_s(:long_ordinal) if current_user.fi_date(current_user.aggregate_amounts[:lean_fi_expenses]).present? %>",
 	"fiDate": "<%= current_user.fi_date.to_formatted_s(:long_ordinal) if current_user.fi_date.present? %>",
-	"expenseAccounts": [
-			<%= current_user.mobile_expense_accounts.map { |a| 
-				'{"name": "' + a.name + '",' +
-				'"averageMonthlySpending": "' + a.average_monthly_spending.round(a.asset_type.precision).to_s + '",' +
-				'"lastMonthsSpending": "' + a.last_months_spending.round(a.asset_type.precision).to_s + '",' +
-				'"daysOfWork": "' + current_user.days_of_work(a).to_s  + '"}'
-			}.join(", ").html_safe %>
-	]
+	"spendableAtStartOfDay": "<%= current_user.spendable_at_start_of_today.round(current_user.home_asset_type.precision) %>",
+	"amountBudgeted": "<%= current_user.amount_budgeted.round(current_user.home_asset_type.precision) %>",
+	"amountReserved": "<%= current_user.reserved_amount.round(current_user.home_asset_type.precision) %>",
+	"availableToSpend": "<%= current_user.available_to_spend.round(current_user.home_asset_type.precision) %>",
+	"minimumBalanceDate": "<%= current_user.min_balance_date.to_formatted_s(:long_ordinal) %>",
+	"spendingToday": "<%= current_user.spending_today.round(current_user.home_asset_type.precision) %>",
+	"availableToSpendToday": "<%= current_user.available_to_spend_today.round(current_user.home_asset_type.precision) %>"
 }

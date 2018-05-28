@@ -2,7 +2,8 @@
 	"id": "<%= account.id %>",  
 	"name": "<%= account.name %>"<% if !local_assigns[:simple] && account.account_type.master_account_type.to_sym == :expense %>,
 	"averageMonthlySpending": "<%= account.average_monthly_spending.round(account.asset_type.precision) %>",
-	"lastMonthsSpending": "<%= account.last_months_spending.round(account.asset_type.precision) %>"
+	"lastMonthsSpending": "<%= account.last_months_spending.round(account.asset_type.precision) %>",
+	"daysOfWork": "<%= current_user.days_of_work(account) %>"
 	<% elsif !local_assigns[:simple] && account.asset_or_liability? %>,
 	"currentBalance": "<%= account.current_balance.round(account.asset_type.precision) %>"<% end %>
 }
