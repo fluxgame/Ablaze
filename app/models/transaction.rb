@@ -15,7 +15,7 @@ class Transaction < ApplicationRecord
   
   before_destroy :verify_not_reconciled
 
-  after_save :update_available_to_spend
+  after_save :update_reserved_amount
   
   def verify_ledger_entries
     if ledger_entries.size < 2
@@ -55,8 +55,8 @@ class Transaction < ApplicationRecord
     end
   end
 
-  def update_available_to_spend
-    self.user.update_available_to_spend if self.repeat_frequency.present? || self.date < Date.today
+  def update_reserved_amount
+    self.user.update_reserved_amount if self.repeat_frequency.present?
   end
 
   def schedule
