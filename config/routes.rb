@@ -2,7 +2,7 @@ Rails.application.routes.draw do
   resources :user_settings
   resources :asset_valuations
   get 'home/index'
-  get 'home/net_worth'
+  get 'home/reports'
   get 'home/fi_statistics'
   
   resources :future_account_balances
