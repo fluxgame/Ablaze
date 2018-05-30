@@ -39,11 +39,11 @@ class LedgerEntry < ApplicationRecord
   end
   
   def invalidate_account_balances(account_id, date)
-
     LedgerEntry.where('date >= ?', self.date).where(account_id: self.account_id).update_all(account_balance_id: nil)
 #    AccountBalance.includes(:ledger_entries).where(ledger_entries: {id: nil}).destroy_all
     AccountBalance.where('date >= ?', self.date).where(account_id: self.account_id).delete_all
 #    ActiveRecord::Base.connection.execute("delete from account_balances where date >= '"+self.date.to_s+"' and not exists(select 1 from ledger_entries le where account_balances.id = le.account_balance_id)")
+    ReportDatum.where('date >= ?', self.date).where(user_id: self.account.user_id).delete_all
   end
   
   def readonly?

@@ -1,4 +1,8 @@
 <h1>Net Worth Report</h1>
-<% @net_worth_report.each do |day| %>
-<p>On <%= day[:date] %>: <%= current_user.home_asset_type.to_currency(day[:net_worth]) %></p>
+<% current_user.report_data.each do |day| %>
+<p>
+	On <%= day.date.to_s %>, 
+	Net Worth: <%= current_user.home_asset_type.to_currency(day.net_worth) %>
+	FI Date: <%= current_user.fi_date(day.annual_post_fi_spending, day.net_worth, day.annual_savings, day.average_rate_of_return) %>
+</p>
 <% end %>

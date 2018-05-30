@@ -7,8 +7,33 @@ class User < ApplicationRecord
   has_many :accounts
   has_many :transactions
   has_many :budget_goals
+  has_many :report_data
   
   belongs_to :home_asset_type, class_name: 'AssetType'
+
+  def report_data
+    last_data_archive = ReportDatum.order(date: :asc).last
+    
+    if last_data_archive.nil?
+      date = Date.parse('2018-01-01')
+    else
+      date = last_data_archive.date + 1.day
+    end
+    
+    while date < Date.today
+      puts "generate data for " + date.to_s
+      am = self.aggregate_amounts(date)
+      
+      rd = ReportDatum.create! user_id: self.id, date: date, 
+          average_rate_of_return: am[:average_rate_of_return], 
+          annual_savings: am[:savings],
+          net_worth: am[:net_worth],
+          annual_post_fi_spending: am[:post_fi_expenses]      
+      date += 1.day
+    end
+    
+    ReportDatum.where(user_id: self.id)
+  end
 
   def mobile_expense_accounts
     Rails.cache.fetch("#{cache_key}/mobile_expense_accounts", expires_in: 15.minutes) {
@@ -109,9 +134,13 @@ class User < ApplicationRecord
     annual_spending / self.withdrawal_rate
   end
   
-  def years_to_fi(annual_spending = self.aggregate_amounts[:post_fi_expenses])
+  def years_to_fi(annual_spending = self.aggregate_amounts[:post_fi_expenses],
+    net_worth = self.aggregate_amounts[:net_worth],
+    annual_savings = self.aggregate_amounts[:savings],
+    rate_of_return = self.aggregate_amounts[:average_rate_of_return])
+    
     begin
-      Exonio.nper(self.aggregate_amounts[:average_rate_of_return], self.aggregate_amounts[:savings] * -1, self.aggregate_amounts[:net_worth] * -1, self.fi_target(annual_spending))
+      Exonio.nper(rate_of_return, annual_savings * -1, net_worth * -1, self.fi_target(annual_spending))
     rescue
       nil
     end
@@ -122,9 +151,13 @@ class User < ApplicationRecord
     return first_transaction.date if first_transaction.present?
   end
     
-  def fi_date(annual_spending = self.aggregate_amounts[:post_fi_expenses])
-    return nil if self.years_to_fi(annual_spending).nil?
-    ytfi = self.years_to_fi(annual_spending)
+  def fi_date(annual_spending = self.aggregate_amounts[:post_fi_expenses],
+    net_worth = self.aggregate_amounts[:net_worth],
+    annual_savings = self.aggregate_amounts[:savings],
+    rate_of_return = self.aggregate_amounts[:average_rate_of_return])
+    
+    ytfi = self.years_to_fi(annual_spending, net_worth, annual_savings, rate_of_return)
+    return nil if ytfi.nil?
     date = Date.today
     date += ytfi.floor.years
     ytfi = (ytfi - ytfi.floor) * 365    
@@ -139,8 +172,8 @@ class User < ApplicationRecord
     }
   end  
     
-  def aggregate_amounts
-    Rails.cache.fetch("#{cache_key}/aggregate_amounts", expires_in: 15.minutes) {
+  def aggregate_amounts(on_date = Date.today)
+    Rails.cache.fetch("#{cache_key}/aggregate_amounts/"+on_date.to_s, expires_in: 15.minutes) {
       am = {
         post_fi_expenses: 0.0,
         lean_fi_expenses: 0.0,
@@ -159,24 +192,24 @@ class User < ApplicationRecord
       self.accounts.each do |account|
         puts "\n\nAccount: " + account.name
         puts "Post FI Expenses: " + am[:post_fi_expenses].to_s
-        years_of_transactions = account.years_of_transactions
+        years_of_transactions = account.years_of_transactions(on_date)
         if years_of_transactions > 0
           account_type = account.account_type.master_account_type.to_sym
 
           if account_type == :expense
-            avg_annual_spend = account.average_monthly_spending(self.home_asset_type) * 12
+            avg_annual_spend = account.average_monthly_spending(self.home_asset_type, on_date) * 12
             puts "Average Annual Spend: " + avg_annual_spend.to_s
             am[:savings] -= avg_annual_spend
             am[:expenses] += avg_annual_spend
             am[:post_fi_expenses_pre_tax] += [avg_annual_spend, account.fi_budget * 12].max if account.post_fi_expense?
             am[:lean_fi_expenses_pre_tax] += (account.fi_budget * 12)
           elsif account.name == "Active Income"
-            avg_annual_spend = account.average_monthly_spending(self.home_asset_type) * 12
+            avg_annual_spend = account.average_monthly_spending(self.home_asset_type, on_date) * 12
             puts "Average Annual Spend: " + avg_annual_spend.to_s
             am[:savings] -= avg_annual_spend
             am[:active_income] -= avg_annual_spend
           elsif [:asset, :liability].include?(account_type)
-            account_balance = account.current_balance(self.home_asset_type)
+            account_balance = account.balance_as_of(on_date, self.home_asset_type)
             if account_balance.present?
               am[:average_rate_of_return] += (account.expected_annual_return * account_balance)
               am[:assets] += account_balance if account_type == :asset

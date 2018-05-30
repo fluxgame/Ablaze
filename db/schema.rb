@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_05_28_130337) do
+ActiveRecord::Schema.define(version: 2018_05_30_133449) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -122,6 +122,18 @@ ActiveRecord::Schema.define(version: 2018_05_28_130337) do
     t.index ["user_id"], name: "index_plaid_items_on_user_id"
   end
 
+  create_table "report_data", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.date "date", null: false
+    t.float "average_rate_of_return"
+    t.float "annual_savings"
+    t.float "annual_post_fi_spending"
+    t.float "net_worth"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_report_data_on_user_id"
+  end
+
   create_table "transactions", force: :cascade do |t|
     t.string "description"
     t.string "repeat_frequency"
@@ -171,6 +183,7 @@ ActiveRecord::Schema.define(version: 2018_05_28_130337) do
   add_foreign_key "ledger_entries", "budget_goals"
   add_foreign_key "ledger_entries", "transactions"
   add_foreign_key "plaid_items", "users"
+  add_foreign_key "report_data", "users"
   add_foreign_key "transactions", "transactions", column: "prototype_transaction_id"
   add_foreign_key "transactions", "users"
   add_foreign_key "users", "asset_types", column: "home_asset_type_id"
