@@ -54,12 +54,17 @@ class HomeController < ApplicationController
     end
      
     i = 1
-    @minimums.each do |day|
+    @minimums.each do |min|
       if @minimums[i].present?
-        day[:days_till_next] = (@minimums[i][:date] - day[:date]).to_i
-        day[:available_to_spend] = day[:running_total] / day[:days_till_next]
+        min[:days_till_next] = (@minimums[i][:date] - min[:date]).to_i
+        min[:available_to_spend] = (min[:running_total] / min[:days_till_next]).to_f
         i += 1
       end
-    end   
+    end
+    
+    @minimums.pop
+    
+    @minimums.sort! { |a, z| a[:available_to_spend] <=> z[:available_to_spend] }
+    @available_to_budget = (@minimums[0][:available_to_spend] - 50) * @minimums[0][:days_till_next]
   end
 end

@@ -2,6 +2,8 @@
 
 <h1>Budget Goals</h1>
 
+<p>Available to Budget: <%= current_user.home_asset_type.to_currency(@available_to_budget) %></p>
+
 <table>
   <thead>
     <tr>
