@@ -1,0 +1,22 @@
+<table>
+	<thead>
+		<tr>
+			<th>Date</th>
+			<th>Amount</th>
+			<th>Running Total</th>
+			<th>Days Till Next</th>
+			<th>Available to Spend</th>
+		</tr>
+	</thead>
+	<tbody>
+		<% @minimums.each do |day| %>
+		<tr>
+			<td><%= day[:date] %></td>
+			<td><%= day[:amount] %></td>
+			<td><%= day[:running_total] %></td>
+			<td><%= day[:days_till_next] %></td>
+			<td><%= day[:available_to_spend] %></td>
+		</tr>
+		<% end %>
+	</tbody>
+</table>		

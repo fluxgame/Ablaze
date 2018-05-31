@@ -19,3 +19,4 @@
 <p>Years to FI: <%= current_user.years_to_fi %></p>
 <p>FI Date: <%= current_user.fi_date.to_formatted_s(:long_ordinal) if current_user.fi_date.present? %></p>
 <p>Lean FI Date: <%= current_user.fi_date(current_user.aggregate_amounts[:lean_fi_expenses]).to_formatted_s(:long_ordinal) if current_user.fi_date(current_user.aggregate_amounts[:lean_fi_expenses]).present? %>
+	

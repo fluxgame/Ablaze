@@ -13,4 +13,53 @@ class HomeController < ApplicationController
     end
       
   end
+  
+  def forecasting
+    scheduled_amounts = []
+    Transaction.where(user_id: current_user.id).where.not(repeat_frequency: nil).each do |st|
+      amount = 0
+      st.ledger_entries.each do |le|
+        if le.account.spending_account?
+            amount += le.amount_in(current_user.home_asset_type)
+        end
+      end
+      
+      scheduled_amounts.push({amount: amount, schedule: st.schedule})
+    end
+    
+    @days = []
+    running_total = current_user.spendable_at_start_of_today - current_user.amount_budgeted
+    for i in 0..364
+      date = Date.today + (i+1).days
+      amount = 0
+      scheduled_amounts.each do |sa|
+        if sa[:schedule].occurs_on?(date)
+          amount += sa[:amount]
+        end
+      end
+      
+      if amount != 0
+        running_total += amount
+        @days.push({date: date, amount: amount, running_total: running_total})
+      end
+    end
+    
+    @days.sort! { |a, z| a[:running_total] <=> z[:running_total] }
+    
+    @minimums = [@days[0]]
+    @days.shift
+    
+    @days.each do |day|
+      @minimums.push(day) if day[:date] > @minimums.last[:date]
+    end
+     
+    i = 1
+    @minimums.each do |day|
+      if @minimums[i].present?
+        day[:days_till_next] = (@minimums[i][:date] - day[:date]).to_i
+        day[:available_to_spend] = day[:running_total] / day[:days_till_next]
+        i += 1
+      end
+    end   
+  end
 end
