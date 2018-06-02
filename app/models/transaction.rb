@@ -84,23 +84,20 @@ class Transaction < ApplicationRecord
           end
         else
           next_date = next_dates[0]
+
+          newt = Transaction.new description: self.description, prototype_transaction_id: self.id, user_id: self.user_id
+        
+          self.active_ledger_entries.each do |le|
+            newt.ledger_entries.push(LedgerEntry.new date: next_date, debit: le.debit, credit: le.credit, 
+                cleared: false, account_id: le.account_id, budget_goal_id: le.budget_goal_id)
+          end
+          
+          newt.save
+                
           sch.start_time = next_date + 1.day
           self.repeat_frequency = sch.to_yaml
           self.save
 
-          transaction = self.dup
-          transaction.repeat_frequency = nil
-          transaction.prototype_transaction_id = self.id
-          transaction.save
-        
-          self.active_ledger_entries.each do |ledger_entry|
-            le = ledger_entry.dup
-            le.transaction_id = transaction.id
-            le.account_reconciliation_id = nil
-            le.date = next_date
-            le.save
-          end
-                
           self.create_next_occurence
         end
       end

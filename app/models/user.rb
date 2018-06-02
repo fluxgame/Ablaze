@@ -92,11 +92,67 @@ class User < ApplicationRecord
     end
     
     self.save
+
+=begin
+    scheduled_amounts = []
+    Transaction.where(user_id: self.id).where.not(repeat_frequency: nil).each do |st|
+      amount = 0
+      st.ledger_entries.each do |le|
+        if le.account.spending_account?
+            amount += le.amount_in(self.home_asset_type)
+        end
+      end
+      
+      scheduled_amounts.push({amount: amount, schedule: st.schedule})
+    end
+    
+    @days = []
+    running_total = self.spendable_at_start_of_today - self.amount_budgeted
+    for i in 0..364
+      date = Date.today + (i+1).days
+      amount = 0
+      scheduled_amounts.each do |sa|
+        if sa[:schedule].occurs_on?(date)
+          amount += sa[:amount]
+        end
+      end
+      
+      if amount != 0
+        running_total += amount
+        @days.push({date: date, amount: amount, running_total: running_total})
+      end
+    end
+    
+    @days.sort! { |a, z| a[:running_total] <=> z[:running_total] }
+    
+    @minimums = [@days[0]]
+    @days.shift
+    
+    @days.each do |day|
+      @minimums.push(day) if day[:date] > @minimums.last[:date]
+    end
+     
+    i = 1
+    @minimums.each do |min|
+      if @minimums[i].present?
+        min[:days_till_next] = (@minimums[i][:date] - min[:date]).to_i
+        min[:available_to_spend] = (min[:running_total] / min[:days_till_next]).to_f
+        i += 1
+      end
+    end
+    
+    @minimums.pop
+    
+    @minimums.sort! { |a, z| a[:available_to_spend] <=> z[:available_to_spend] }
+    @available_to_budget = (@minimums[0][:available_to_spend] - 50) * @minimums[0][:days_till_next]
+    self.min_balance_date = @minimums[0][:date] + @minimums[0][:days_till_next].days
+    self.reserved_amount = (50 * @minimums[0][:days_till_next]) - (@minimums[0][:running_total] - (self.spendable_at_start_of_today - self.amount_budgeted))
+    self.save
+=end
   end
   
   def spendable_at_start_of_today
-    ats = self.aggregate_amounts[:current_spending_balance]
-    ats += self.spending_today
+    ats = self.aggregate_amounts(Date.today - 1)[:current_spending_balance]
   end
   
   def available_to_spend  
@@ -118,9 +174,15 @@ class User < ApplicationRecord
       spending = 0
       LedgerEntry.includes(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, date: Date.today).each do |le|
         amount = le.amount_in(self.home_asset_type)
-        spending -= amount if le.account.spending_account?
-        spending += amount if le.account.account_type.master_account_type == :income
-        spending -= amount if !le.budget_goal_id.nil?
+        
+        # subtract outflows from spending accounts (increases spending)
+        spending -= amount if le.account.spending_account? and amount < 0
+        
+        # subtract spending that was budgeted for (decreases spending)
+        spending -= amount if !le.budget_goal_id.nil? and amount > 0
+
+#        spending += amount if le.account.account_type.master_account_type == :income
+#        spending += amount if le.account.account_type.master_account_type == :expense
       end
       return spending
     }
@@ -190,22 +252,19 @@ class User < ApplicationRecord
       }
       
       self.accounts.each do |account|
-        puts "\n\nAccount: " + account.name
-        puts "Post FI Expenses: " + am[:post_fi_expenses].to_s
         years_of_transactions = account.years_of_transactions(on_date)
         if years_of_transactions > 0
           account_type = account.account_type.master_account_type.to_sym
 
           if account_type == :expense
             avg_annual_spend = account.average_monthly_spending(self.home_asset_type, on_date) * 12
-            puts "Average Annual Spend: " + avg_annual_spend.to_s
             am[:savings] -= avg_annual_spend
             am[:expenses] += avg_annual_spend
+            puts "+" + avg_annual_spend.to_s + "(" + account.name + ")"
             am[:post_fi_expenses_pre_tax] += [avg_annual_spend, account.fi_budget * 12].max if account.post_fi_expense?
             am[:lean_fi_expenses_pre_tax] += (account.fi_budget * 12)
           elsif account.name == "Active Income"
             avg_annual_spend = account.average_monthly_spending(self.home_asset_type, on_date) * 12
-            puts "Average Annual Spend: " + avg_annual_spend.to_s
             am[:savings] -= avg_annual_spend
             am[:active_income] -= avg_annual_spend
           elsif [:asset, :liability].include?(account_type)

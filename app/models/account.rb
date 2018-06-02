@@ -78,12 +78,16 @@ class Account < ApplicationRecord
   end
   
   def average_monthly_spending(in_asset_type = self.asset_type, on_date = Date.today)
+    if [:expense, :income].include? self.account_type.master_account_type.to_sym
       yot = self.years_of_transactions(on_date)
       if (yot > 0)
         return self.balance_as_of(on_date, in_asset_type) / yot / 12
       else
         return 0
       end
+    end
+    
+    nil
   end
   
   def last_months_spending(in_asset_type = self.asset_type)
