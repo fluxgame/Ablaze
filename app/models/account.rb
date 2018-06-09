@@ -87,6 +87,14 @@ class Account < ApplicationRecord
     nil
   end
   
+  def available_to_budget(in_asset_type = self.asset_type)
+    budget = self.asset_type.exchange(self.fi_budget, in_asset_type)
+    
+    return nil if budget.nil? || budget == 0
+
+    budget * 12 * self.years_of_transactions - self.balance_as_of(Date.today, in_asset_type)
+  end
+  
   def last_months_spending(in_asset_type = self.asset_type)
     self.change_in_balance(Date.today - 1.month, Date.today, in_asset_type)
   end
