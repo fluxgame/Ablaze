@@ -1,11 +1,6 @@
 <p>Spendable This Morning: <%= current_user.home_asset_type.to_currency(current_user.spendable_at_start_of_today) %></p>
 <p>Amount Budgeted: <%= current_user.home_asset_type.to_currency(current_user.amount_budgeted) %></p>
-<p>Amount Reserved: <%= current_user.home_asset_type.to_currency(current_user.reserved_amount) %></p>
-<p>Available to Spend: <%= current_user.home_asset_type.to_currency(current_user.available_to_spend) %></p>
-<p>Minimum Balance Date: <%= current_user.min_balance_date.to_formatted_s(:long_ordinal) %></p>
 <p>Spending Today: <%= current_user.home_asset_type.to_currency(current_user.spending_today) %></p>
-<p>Available to Spend Today: <%= current_user.home_asset_type.to_currency(current_user.available_to_spend_today) %></p>
-
 <p>Assets: <%= current_user.home_asset_type.to_currency(current_user.aggregate_amounts[:assets]) %></p>
 <p>Liabilities: <%= current_user.home_asset_type.to_currency(current_user.aggregate_amounts[:liabilities]) %></p>
 <p>Net Worth: <%= current_user.home_asset_type.to_currency(current_user.aggregate_amounts[:net_worth]) %></p>
