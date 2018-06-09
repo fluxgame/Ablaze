@@ -4,8 +4,10 @@
 	<thead>
 		<tr>
 			<th>Expense</th>
-			<th>Rolling Month's Spending</th>
+			<th>Recent Spending</th>
+			<th>Recent Unbudgeted Spending</th>
 			<th>Average Monthly Spending</th>
+			<th>Available to Spend</th>
 			<th>Days of Work</th>
 		</tr>
 	</thead>
@@ -14,7 +16,9 @@
 		<tr>
 			<td><%= a.name %></td>
 			<td><%= current_user.home_asset_type.to_currency(a.last_months_spending(current_user.home_asset_type)) %></td>
+			<td><%= current_user.home_asset_type.to_currency(a.recent_unbudgeted_spending(current_user.home_asset_type)) %></td>
 			<td><%= current_user.home_asset_type.to_currency(a.average_monthly_spending(current_user.home_asset_type)) %></td>
+			<td><%= current_user.home_asset_type.to_currency(a.available_to_spend(current_user.home_asset_type)) %></td>
 			<td><%= current_user.days_of_work(a) %>
 		</tr>
 		<% end %>

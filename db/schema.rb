@@ -131,6 +131,7 @@ ActiveRecord::Schema.define(version: 2018_05_30_133449) do
     t.float "net_worth"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["user_id", "date"], name: "user_id_date_index", unique: true
     t.index ["user_id"], name: "index_report_data_on_user_id"
   end
 

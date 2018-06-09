@@ -2,7 +2,7 @@
 
 <h1>Budget Goals</h1>
 
-<p>Available to Budget: <%= current_user.home_asset_type.to_currency(@available_to_budget) %></p>
+<p>Available to Budget: <%= current_user.home_asset_type.to_currency(current_user.forecast_register.sort_by { |key, v| v[:running_total] }.first[1][:running_total]) %></p>
 
 <table>
   <thead>

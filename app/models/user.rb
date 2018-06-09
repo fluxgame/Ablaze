@@ -12,7 +12,7 @@ class User < ApplicationRecord
   belongs_to :home_asset_type, class_name: 'AssetType'
 
   def report_data
-    last_data_archive = ReportDatum.order(date: :asc).last
+    last_data_archive = ReportDatum.where(user_id: self.id).order(date: :desc).first
     
     if last_data_archive.nil?
       date = Date.parse('2018-01-01')
@@ -68,120 +68,25 @@ class User < ApplicationRecord
       return amount_budgeted
     }
   end
-    
-  def update_reserved_amount
-    scheduled_transactions = Transaction.where(user_id: self.id).where.not(repeat_frequency: nil)
-    
-    self.min_balance_date = Date.today - 1
-    self.reserved_amount = running_total = 0
-    for i in 1..365
-      scheduled_transactions.each do |st|
-        if st.schedule.occurs_on?(Date.today + i.day)
-          st.ledger_entries.each do |le|
-            if le.account.spending_account?
-              running_total += (le.credit.nil? ? 0 : le.credit) - (le.debit.nil? ? 0 : le.debit)
-            end
-          end
-        end
-      end
-
-      if running_total > self.reserved_amount
-        self.reserved_amount = running_total
-        self.min_balance_date = Date.today + i.day
-      end
-    end
-    
-    self.save
-
-=begin
-    scheduled_amounts = []
-    Transaction.where(user_id: self.id).where.not(repeat_frequency: nil).each do |st|
-      amount = 0
-      st.ledger_entries.each do |le|
-        if le.account.spending_account?
-            amount += le.amount_in(self.home_asset_type)
-        end
-      end
       
-      scheduled_amounts.push({amount: amount, schedule: st.schedule})
-    end
-    
-    @days = []
-    running_total = self.spendable_at_start_of_today - self.amount_budgeted
-    for i in 0..364
-      date = Date.today + (i+1).days
-      amount = 0
-      scheduled_amounts.each do |sa|
-        if sa[:schedule].occurs_on?(date)
-          amount += sa[:amount]
-        end
-      end
-      
-      if amount != 0
-        running_total += amount
-        @days.push({date: date, amount: amount, running_total: running_total})
-      end
-    end
-    
-    @days.sort! { |a, z| a[:running_total] <=> z[:running_total] }
-    
-    @minimums = [@days[0]]
-    @days.shift
-    
-    @days.each do |day|
-      @minimums.push(day) if day[:date] > @minimums.last[:date]
-    end
-     
-    i = 1
-    @minimums.each do |min|
-      if @minimums[i].present?
-        min[:days_till_next] = (@minimums[i][:date] - min[:date]).to_i
-        min[:available_to_spend] = (min[:running_total] / min[:days_till_next]).to_f
-        i += 1
-      end
-    end
-    
-    @minimums.pop
-    
-    @minimums.sort! { |a, z| a[:available_to_spend] <=> z[:available_to_spend] }
-    @available_to_budget = (@minimums[0][:available_to_spend] - 50) * @minimums[0][:days_till_next]
-    self.min_balance_date = @minimums[0][:date] + @minimums[0][:days_till_next].days
-    self.reserved_amount = (50 * @minimums[0][:days_till_next]) - (@minimums[0][:running_total] - (self.spendable_at_start_of_today - self.amount_budgeted))
-    self.save
-=end
-  end
-  
   def spendable_at_start_of_today
     ats = self.aggregate_amounts(Date.today - 1)[:current_spending_balance]
   end
   
-  def available_to_spend  
-    self.update_reserved_amount if self.reserved_amount.nil?
-    
-    ats = self.spendable_at_start_of_today
-    ats -= self.amount_budgeted
-    ats -= self.reserved_amount
-  end
-  
-  def available_to_spend_today
-    atst = self.available_to_spend
-    atst /= (self.min_balance_date - Date.today + 1)
-    atst -= self.spending_today
-  end    
-
   def spending_today
     Rails.cache.fetch("#{cache_key}/spending_today", expires_in: 1.minute) {
       spending = 0
       LedgerEntry.includes(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, date: Date.today).each do |le|
         amount = le.amount_in(self.home_asset_type)
         
-        # subtract outflows from spending accounts (increases spending)
+        # subtract changes to spending accounts (outflow increases spending, inflow decreases spending)
         spending -= amount if le.account.spending_account? and amount < 0
         
         # subtract spending that was budgeted for (decreases spending)
         spending -= amount if !le.budget_goal_id.nil? and amount > 0
 
-#        spending += amount if le.account.account_type.master_account_type == :income
+        # add income
+        spending += amount if le.account.account_type.master_account_type == :income
 #        spending += amount if le.account.account_type.master_account_type == :expense
       end
       return spending
@@ -229,7 +134,7 @@ class User < ApplicationRecord
     
   def recent_transactions
     Rails.cache.fetch("#{cache_key}/recent_transactions", expires_in: 15.minutes) {
-      Transaction.left_outer_joins(:ledger_entries).where.not(ledger_entries: {id: nil}).order('ledger_entries.date desc')
+      Transaction.left_outer_joins(:ledger_entries).where.not(ledger_entries: {id: nil}).where('date = ?', Date.today).order('ledger_entries.date desc')
         .where("not exists (select 1 from ledger_entries le inner join accounts a on a.id = le.account_id where (le.account_reconciliation_id is not null or le.date is null or a.mobile <> 't' or a.user_id <> ?) and le.transaction_id = transactions.id)", self.id).uniq
     }
   end  
@@ -262,7 +167,7 @@ class User < ApplicationRecord
             am[:expenses] += avg_annual_spend
             puts "+" + avg_annual_spend.to_s + "(" + account.name + ")"
             am[:post_fi_expenses_pre_tax] += [avg_annual_spend, account.fi_budget * 12].max if account.post_fi_expense?
-            am[:lean_fi_expenses_pre_tax] += (account.fi_budget * 12)
+            am[:lean_fi_expenses_pre_tax] += (account.fi_budget * 12) if account.lean_fi_expense?
           elsif account.name == "Active Income"
             avg_annual_spend = account.average_monthly_spending(self.home_asset_type, on_date) * 12
             am[:savings] -= avg_annual_spend
@@ -305,4 +210,44 @@ class User < ApplicationRecord
     days_per_dollar = (days_to_full_fi - days_to_lean_fi) / (self.aggregate_amounts[:post_fi_expenses_pre_tax] - self.aggregate_amounts[:lean_fi_expenses_pre_tax])
     return (12 * days_per_dollar * ([0, account.average_monthly_spending(self.home_asset_type) - account.fi_budget].max)).round(0)
   end
+  
+  def forecast_register
+    register = {}
+    Transaction.where(user_id: self.id).where.not(repeat_frequency: nil).each do |st|
+      schedule = st.schedule
+      for d in (Date.today)..(Date.today + 1.year)
+        register[d] = {amount: 0, spending: 0} if register[d].nil?
+        
+        if schedule.occurs_on?(d)
+          st.ledger_entries.each do |le|
+            register[d][:amount] += le.amount_in(self.home_asset_type) if le.account.spending_account?
+            register[d][:spending] += le.amount_in(self.home_asset_type) if le.account.fi_budget > 0
+          end
+        end
+      end
+    end
+    
+    running_total = self.spendable_at_start_of_today - self.amount_budgeted
+
+    monthly_budget = 0
+    Account.where(user_id: self.id).where('fi_budget > 0').each do |a|
+      running_total -= [0,a.available_to_spend].max
+      monthly_budget += a.fi_budget
+    end
+    
+    for m in 0..11
+      monthly_spending = 0
+      for d in (Date.today + m.months)..(Date.today + (1+m).months)
+        monthly_spending += register[d][:spending]
+      end
+      register[d][:amount] -= [0,monthly_budget-monthly_spending].max
+    end
+
+    register.each do |date,line|
+      running_total += line[:amount]
+      line[:running_total] = running_total
+    end
+    
+    register.sort_by { |key, v| v[:running_total] }.to_h
+  end    
 end

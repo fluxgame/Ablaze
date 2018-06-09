@@ -3,20 +3,18 @@
 		<tr>
 			<th>Date</th>
 			<th>Amount</th>
+			<th>Spending</th>
 			<th>Running Total</th>
-			<th>Days Till Next</th>
-			<th>Available to Spend</th>
 		</tr>
 	</thead>
 	<tbody>
-		<% @minimums.each do |day| %>
+		<% current_user.forecast_register.each do |date,line| %>
 		<tr>
-			<td><%= day[:date] %></td>
-			<td><%= day[:amount] %></td>
-			<td><%= day[:running_total] %></td>
-			<td><%= day[:days_till_next] %></td>
-			<td><%= day[:available_to_spend] %></td>
+			<td><%= date %></td>
+			<td><%= line[:amount] %></td>
+			<td><%= line[:spending] %></td>
+			<td><%= line[:running_total] %></td>
 		</tr>
 		<% end %>
 	</tbody>
-</table>		
+</table>

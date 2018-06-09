@@ -30,8 +30,7 @@ class Account < ApplicationRecord
 
       if previous_ledger_entry.date == date
         balance = self.balance_as_of(date - 1.day)
-        balance -= LedgerEntry.where(account_id: self.id, date: date).sum(:credit)
-        balance += LedgerEntry.where(account_id: self.id, date: date).sum(:debit)
+        balance += LedgerEntry.where(account_id: self.id, date: date).sum('coalesce(debit,0) - coalesce(credit,0)')
 
         stored_balance = self.account_balances.create! account_id: self.id, date: date, balance: balance
         LedgerEntry.where(account_id: self.id, date: date).update_all(account_balance_id: stored_balance.id)
@@ -50,10 +49,8 @@ class Account < ApplicationRecord
   end
   
   def cleared_balance(in_asset_type = self.asset_type)
-    credits = LedgerEntry.where(account_id: self.id, cleared: true, account_reconciliation_id: nil).sum(:credit)
-    debits = LedgerEntry.where(account_id: self.id, cleared: true, account_reconciliation_id: nil).sum(:debit)
-
-    self.asset_type.exchange(reconciled_balance + debits - credits, in_asset_type)
+    cleared_amounts = LedgerEntry.where(account_id: self.id, cleared: true, account_reconciliation_id: nil).sum('coalesce(debit,0) - coalesce(credit,0)')
+    self.asset_type.exchange(reconciled_balance + cleared_amounts, in_asset_type)
   end
   
   def latest_reconciliation
@@ -94,9 +91,25 @@ class Account < ApplicationRecord
     self.change_in_balance(Date.today - 1.month, Date.today, in_asset_type)
   end
   
+  def recent_unbudgeted_spending(in_asset_type = self.asset_type)
+    LedgerEntry.where(budget_goal_id: nil, account_id: self.id).where('date >= ? and date <= ?',Date.today - 1.month, Date.today).sum('COALESCE(debit,0) - COALESCE(credit,0)')
+  end
+  
+  def available_to_spend(in_asset_type = self.asset_type)
+    budget = self.asset_type.exchange(self.fi_budget, in_asset_type)
+    
+    return nil if budget.nil? || budget == 0
+    
+    budget + (budget - average_monthly_spending(in_asset_type)) - recent_unbudgeted_spending(in_asset_type)
+  end
+  
   def post_fi_expense?
     !['Interest Expense','MA Taxes','Federal Taxes','Payroll Taxes'].include?(name)    
 #    ['Housing','Transportation','Pets','Health','Discretionary - Joint','Discretionary - Dave','Discretionary - Jess'].include?(name)
+  end
+  
+  def lean_fi_expense?
+    ['Food','Transportation','Housing','Health','Pets'].include?(name)
   end
   
   def expected_annual_return

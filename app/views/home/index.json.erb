@@ -1,4 +1,3 @@
 {
-	"availableToSpend": "<%= current_user.available_to_spend_today.round(current_user.home_asset_type.precision) %>", 
 	"fiDate": "<%= current_user.fi_date.to_s if current_user.fi_date.present? %>"
 }

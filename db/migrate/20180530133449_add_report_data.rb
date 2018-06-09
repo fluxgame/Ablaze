@@ -10,5 +10,7 @@ class AddReportData < ActiveRecord::Migration[5.2]
       
       t.timestamps
     end
+
+	  add_index :report_data, [:user_id, :date], unique: true, name: "user_id_date_index"
   end
 end
