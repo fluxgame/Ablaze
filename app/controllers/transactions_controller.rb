@@ -29,11 +29,15 @@ class TransactionsController < ApplicationController
   # POST /transactions
   # POST /transactions.json
   def create
-    @transaction = Transaction.new(transaction_params)
+    params = transaction_params
+    params[:ledger_entries_attributes].each do |param|
+      param[:date] = Date.today if param[:date] == "auto"
+    end
+    
+    @transaction = Transaction.new(params)
     @transaction.user_id = current_user.id
 
     @transaction.ledger_entries.each do |le|
-      le.date = Date.today if le.date == 'auto'
       le.cleared = false if le.cleared.nil?
     end
     
@@ -51,12 +55,15 @@ class TransactionsController < ApplicationController
   # PATCH/PUT /transactions/1
   # PATCH/PUT /transactions/1.json
   def update
-
     respond_to do |format|
-      @transaction.assign_attributes(transaction_params)
+      params = transaction_params
+      params[:ledger_entries_attributes].each do |param|
+        param[:date] = param[:id].present? ? LedgerEntry.find(param[:id]).date : Date.today if param[:date] == "auto"
+      end
+
+      @transaction.assign_attributes(params)
       
       @transaction.ledger_entries.each do |le|
-        le.date = LedgerEntry.find(le.id).date if le.date == 'auto'
         le.cleared = LedgerEntry.find(le.id).cleared if le.cleared.nil?
       end
       
