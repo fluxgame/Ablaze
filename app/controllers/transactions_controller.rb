@@ -57,8 +57,8 @@ class TransactionsController < ApplicationController
   def update
     respond_to do |format|
       params = transaction_params
-      params[:ledger_entries_attributes].each do |param|
-        param[:date] = param[:id].present? ? LedgerEntry.find(param[:id]).date : Date.today if param[:date] == "auto"
+      params[:ledger_entries_attributes].each do |key,param|
+        param[:date] = param[:id].present? ? LedgerEntry.find(param[:id].to_i).date : Date.today if param[:date] == "auto"
       end
 
       @transaction.assign_attributes(params)
