@@ -6,6 +6,7 @@ class Account < ApplicationRecord
   has_many :account_reconciliations
   has_many :account_balances
   has_many :ledger_entries
+  has_many :budget_goals
   
   attr_reader :balance
   
@@ -78,7 +79,7 @@ class Account < ApplicationRecord
     if [:expense, :income].include? self.account_type.master_account_type.to_sym
       yot = self.years_of_transactions(on_date)
       if (yot > 0)
-        return self.balance_as_of(on_date, in_asset_type) / yot / 12
+        return (self.balance_as_of(on_date, in_asset_type) + self.budgeted_amount) / yot / 12
       else
         return 0
       end
@@ -109,6 +110,14 @@ class Account < ApplicationRecord
     return nil if budget.nil? || budget == 0
     
     budget + (budget - average_monthly_spending(in_asset_type)) - recent_unbudgeted_spending(in_asset_type)
+  end
+  
+  def budgeted_amount
+    amount = 0
+    budget_goals.each do |goal|
+      amount += goal.remaining_amount
+    end
+    amount
   end
   
   def post_fi_expense?

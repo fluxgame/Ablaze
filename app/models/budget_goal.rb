@@ -1,5 +1,6 @@
 class BudgetGoal < ApplicationRecord
   belongs_to :user, touch: true
+  belongs_to :account
   has_many :ledger_entries
   has_many :budgeted_amounts, dependent: :destroy
   

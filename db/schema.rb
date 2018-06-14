@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_05_30_133449) do
+ActiveRecord::Schema.define(version: 2018_06_14_221653) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -82,6 +82,8 @@ ActiveRecord::Schema.define(version: 2018_05_30_133449) do
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "account_id"
+    t.index ["account_id"], name: "index_budget_goals_on_account_id"
     t.index ["user_id"], name: "index_budget_goals_on_user_id"
   end
 
@@ -176,6 +178,7 @@ ActiveRecord::Schema.define(version: 2018_05_30_133449) do
   add_foreign_key "accounts", "users"
   add_foreign_key "asset_valuations", "asset_types"
   add_foreign_key "asset_valuations", "asset_types", column: "valuation_asset_type_id"
+  add_foreign_key "budget_goals", "accounts"
   add_foreign_key "budget_goals", "users"
   add_foreign_key "budgeted_amounts", "budget_goals"
   add_foreign_key "ledger_entries", "account_balances"
