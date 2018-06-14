@@ -47,7 +47,6 @@ end
 ActiveRecord::Base.connection.execute("SELECT setval('account_types_id_seq', (SELECT max(id) FROM account_types));")
 
 user = User.create!(email: "fluxgame@gmail.com", password: "123456", authentication_token: "_sMbFzbPr_b7dF7V9sCk", home_asset_type_id: AssetType.where(abbreviation: 'USD').first.id)
-user.update_reserved_amount
 
 CSV.foreach("db/seed_accounts.csv", :headers => true, :return_headers => false) do |row|
 #  id,name,expected_annual_return,asset_type_id,account_type_id,created_at,updated_at,days_to_forecast,user_id,mobile

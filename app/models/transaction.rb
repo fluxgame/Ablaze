@@ -14,8 +14,6 @@ class Transaction < ApplicationRecord
   validate :verify_ledger_entries
   
   before_destroy :verify_not_reconciled
-
-  after_save :update_reserved_amount
   
   def verify_ledger_entries
     if ledger_entries.size < 2
@@ -53,10 +51,6 @@ class Transaction < ApplicationRecord
         throw :abort
       end
     end
-  end
-
-  def update_reserved_amount
-    self.user.update_reserved_amount if self.repeat_frequency.present?
   end
 
   def schedule
