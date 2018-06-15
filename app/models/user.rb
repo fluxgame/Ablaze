@@ -97,8 +97,15 @@ class User < ApplicationRecord
     0.04
   end
   
-  def fi_target(annual_spending = self.aggregate_amounts[:post_fi_expenses])
-    annual_spending / self.withdrawal_rate
+  def death_date
+    Date.parse("2101-10-21")
+  end
+  
+  def fi_target(annual_spending = self.aggregate_amounts[:post_fi_expenses], 
+    rate_of_return = self.aggregate_amounts[:average_rate_of_return])
+    
+    Exonio.pv(rate_of_return, (death_date - Date.today)/365, annual_spending * -1, 0)
+#    annual_spending / self.withdrawal_rate
   end
   
   def years_to_fi(annual_spending = self.aggregate_amounts[:post_fi_expenses],
