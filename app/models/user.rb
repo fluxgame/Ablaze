@@ -101,10 +101,14 @@ class User < ApplicationRecord
     Date.parse("2101-10-21")
   end
   
+  def inflation_rate
+    0.0322
+  end
+  
   def fi_target(annual_spending = self.aggregate_amounts[:post_fi_expenses], 
     rate_of_return = self.aggregate_amounts[:average_rate_of_return])
     
-    Exonio.pv(rate_of_return, (death_date - Date.today)/365, annual_spending * -1, 0)
+    Exonio.pv((1+rate_of_return)/(1+inflation_rate)-1, (death_date - Date.today)/365, annual_spending * -1, 0)
 #    annual_spending / self.withdrawal_rate
   end
   
