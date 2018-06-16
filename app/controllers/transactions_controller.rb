@@ -30,7 +30,7 @@ class TransactionsController < ApplicationController
   # POST /transactions.json
   def create
     params = transaction_params
-    params[:ledger_entries_attributes].each do |param|
+    params[:ledger_entries_attributes].each do |key,param|
       param[:date] = Date.today if param[:date] == "auto"
     end
     
