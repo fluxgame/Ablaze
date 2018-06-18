@@ -226,13 +226,16 @@ class User < ApplicationRecord
     register = {}
     Transaction.where(user_id: self.id).where.not(repeat_frequency: nil).each do |st|
       schedule = st.schedule
-      for d in (Date.today)..(Date.today + 1.year)
-        register[d] = {amount: 0, spending: 0} if register[d].nil?
+      for w in 0..51
+        week_start = Date.today + w.weeks
+        register[week_start] = {amount: 0, spending: 0} if register[week_start].nil?
         
-        if schedule.occurs_on?(d)
-          st.ledger_entries.each do |le|
-            register[d][:amount] += le.amount_in(self.home_asset_type) if le.account.spending_account?
-            register[d][:spending] += le.amount_in(self.home_asset_type) if le.account.fi_budget > 0
+        for d in week_start..(week_start + 6.days)
+          if schedule.occurs_on?(d)
+            st.ledger_entries.each do |le|
+              register[week_start][:amount] += le.amount_in(self.home_asset_type) if le.account.spending_account?
+              register[week_start][:spending] += le.amount_in(self.home_asset_type) if le.account.fi_budget > 0
+            end
           end
         end
       end
@@ -240,23 +243,15 @@ class User < ApplicationRecord
     
     running_total = self.spendable_at_start_of_today - self.amount_budgeted
 
-    monthly_budget = 0
+    weekly_budget = 0
     Account.where(user_id: self.id).where('fi_budget > 0').each do |a|
       running_total -= [0,a.available_to_spend].max
-      monthly_budget += a.fi_budget
+      weekly_budget += a.fi_budget * 12 / 52
     end
     
-    for m in 0..11
-      monthly_spending = 0
-      for d in (Date.today + m.months)..(Date.today + (1+m).months)
-        monthly_spending += register[d][:spending]
-      end
-
-      daily_spending = [0,monthly_budget-monthly_spending].max / ((Date.today + (1+m).months) - (Date.today + m.months))
-
-      for d in (Date.today + m.months)..(Date.today + (1+m).months)
-        register[d][:amount] -= daily_spending
-      end
+    for w in 0..51
+      week_start = Date.today + w.weeks
+      register[week_start][:amount] -= [0, weekly_budget - register[week_start][:spending]].max
     end
 
     register.each do |date,line|
