@@ -251,7 +251,12 @@ class User < ApplicationRecord
       for d in (Date.today + m.months)..(Date.today + (1+m).months)
         monthly_spending += register[d][:spending]
       end
-      register[d][:amount] -= [0,monthly_budget-monthly_spending].max
+
+      daily_spending = [0,monthly_budget-monthly_spending].max / ((Date.today + (1+m).months) - (Date.today + m.months))
+
+      for d in (Date.today + m.months)..(Date.today + (1+m).months)
+        register[d][:amount] -= daily_spending
+      end
     end
 
     register.each do |date,line|
