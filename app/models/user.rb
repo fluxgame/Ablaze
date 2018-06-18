@@ -246,7 +246,7 @@ class User < ApplicationRecord
       annual_budget += a.fi_budget * 12
     end
     
-    daily_spend = [0, annual_budget - annual_spending].max
+    daily_spend = [0, (annual_budget - annual_spending) / 365].max.to_f
     
     for d in Date.today..(Date.today + 1.year - 1.day)
       register[d][:amount] -= daily_spend
