@@ -224,34 +224,32 @@ class User < ApplicationRecord
   
   def forecast_register
     register = {}
+    annual_spending = 0
     Transaction.where(user_id: self.id).where.not(repeat_frequency: nil).each do |st|
       schedule = st.schedule
-      for w in 0..51
-        week_start = Date.today + w.weeks
-        register[week_start] = {amount: 0, spending: 0} if register[week_start].nil?
-        
-        for d in week_start..(week_start + 6.days)
-          if schedule.occurs_on?(d)
-            st.ledger_entries.each do |le|
-              register[week_start][:amount] += le.amount_in(self.home_asset_type) if le.account.spending_account?
-              register[week_start][:spending] += le.amount_in(self.home_asset_type) if le.account.fi_budget > 0
-            end
+      for d in Date.today..(Date.today + 1.year - 1.day)
+        register[d] = {amount: 0} if register[d].nil?
+        if schedule.occurs_on?(d)
+          st.ledger_entries.each do |le|
+            register[d][:amount] += le.amount_in(self.home_asset_type) if le.account.spending_account?
+            annual_spending += le.amount_in(self.home_asset_type) if le.account.fi_budget > 0
           end
         end
       end
     end
     
     running_total = self.spendable_at_start_of_today - self.amount_budgeted
+    annual_budget = 0
 
-    weekly_budget = 0
     Account.where(user_id: self.id).where('fi_budget > 0').each do |a|
       running_total -= [0,a.available_to_spend].max
-      weekly_budget += a.fi_budget * 12 / 52
+      annual_budget += a.fi_budget * 12
     end
     
-    for w in 0..51
-      week_start = Date.today + w.weeks
-      register[week_start][:amount] -= [0, weekly_budget - register[week_start][:spending]].max
+    daily_spend = [0, annual_budget - annual_spending].max
+    
+    for d in Date.today..(Date.today + 1.year - 1.day)
+      register[d][:amount] -= daily_spend
     end
 
     register.each do |date,line|
