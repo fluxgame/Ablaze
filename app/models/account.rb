@@ -114,6 +114,8 @@ class Account < ApplicationRecord
     average_spend = average_monthly_spending(in_asset_type)
     
     ats -= (average_spend - budget) ** 1.3 if average_spend > budget
+    
+    ats
   end
   
   def budgeted_amount
