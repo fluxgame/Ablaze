@@ -5,7 +5,7 @@
 		<tr>
 			<th>Expense</th>
 			<th>Recent Spending</th>
-			<th>Recent Unbudgeted Spending</th>
+			<th>Recent Unplanned Spending</th>
 			<th>Average Monthly Spending</th>
 			<th>Available to Spend</th>
 			<th>Available to Budget</th>
@@ -16,7 +16,7 @@
 		<tr>
 			<td><%= a.name %></td>
 			<td><%= current_user.home_asset_type.to_currency(a.last_months_spending(current_user.home_asset_type)) %></td>
-			<td><%= current_user.home_asset_type.to_currency(a.recent_unbudgeted_spending(current_user.home_asset_type)) %></td>
+			<td><%= current_user.home_asset_type.to_currency(a.recent_unplanned_spending(current_user.home_asset_type)) %></td>
 			<td><%= current_user.home_asset_type.to_currency(a.average_monthly_spending(current_user.home_asset_type)) %></td>
 			<td><%= current_user.home_asset_type.to_currency(a.available_to_spend(current_user.home_asset_type)) %></td>
 			<td><%= current_user.home_asset_type.to_currency(a.available_to_budget(current_user.home_asset_type)) %></td>

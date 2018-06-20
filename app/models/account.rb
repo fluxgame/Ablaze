@@ -100,8 +100,8 @@ class Account < ApplicationRecord
     self.change_in_balance(Date.today - 1.month, Date.today, in_asset_type)
   end
   
-  def recent_unbudgeted_spending(in_asset_type = self.asset_type)
-    LedgerEntry.where(budget_goal_id: nil, account_id: self.id).where('date >= ? and date <= ?',Date.today - 1.month, Date.today).sum('COALESCE(debit,0) - COALESCE(credit,0)')
+  def recent_unplanned_spending(in_asset_type = self.asset_type)
+    LedgerEntry.joins(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, budget_goal_id: nil, account_id: self.id).where('date >= ? and date <= ?',Date.today - 1.month, Date.today).sum('COALESCE(debit,0) - COALESCE(credit,0)')
   end
   
   def available_to_spend(in_asset_type = self.asset_type)
@@ -109,7 +109,11 @@ class Account < ApplicationRecord
     
     return nil if budget.nil? || budget == 0
     
-    budget + (budget - average_monthly_spending(in_asset_type)) - recent_unbudgeted_spending(in_asset_type)
+    ats = budget - recent_unplanned_spending(in_asset_type)
+    
+    average_spend = average_monthly_spending(in_asset_type)
+    
+    ats -= (average_spend - budget) ** 1.3 if average_spend > budget
   end
   
   def budgeted_amount
