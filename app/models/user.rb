@@ -70,7 +70,7 @@ class User < ApplicationRecord
   end
       
   def spendable_at_start_of_today
-    ats = self.aggregate_amounts(Date.today - 1)[:current_spending_balance]
+    self.aggregate_amounts(Date.today - 1)[:current_spending_balance]
   end
   
   def spending_today
@@ -238,7 +238,7 @@ class User < ApplicationRecord
       end
     end
     
-    running_total = self.spendable_at_start_of_today - self.amount_budgeted
+    running_total = self.aggregate_amounts[:current_spending_balance] - self.amount_budgeted
     annual_budget = 0
 
     Account.where(user_id: self.id).where('fi_budget > 0').each do |a|
