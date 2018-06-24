@@ -6,8 +6,6 @@ class BudgetGoal < ApplicationRecord
   
   def remaining_amount
     return nil if self.new_record?
-    Rails.cache.fetch("#{cache_key}/remaining_amount", expires_in: 15.minutes) {
-      (BudgetedAmount.where(budget_goal_id: self.id).sum(:amount) - LedgerEntry.where(budget_goal_id: self.id).sum(:debit) - LedgerEntry.where(budget_goal_id: self.id).sum(:credit)).round(user.home_asset_type.precision)
-    }
+    (BudgetedAmount.where(budget_goal_id: self.id).sum(:amount) - LedgerEntry.where(budget_goal_id: self.id).sum('COALESCE(debit,0) - COALESCE(credit,0)')).round(user.home_asset_type.precision)
   end
 end
