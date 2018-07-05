@@ -101,7 +101,7 @@ class Account < ApplicationRecord
   end
   
   def recent_unplanned_spending(in_asset_type = self.asset_type)
-    LedgerEntry.joins(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, budget_goal_id: nil, account_id: self.id).where('date >= ? and date <= ?',Date.today - 1.month, Date.today).sum('COALESCE(debit,0) - COALESCE(credit,0)')
+    LedgerEntry.joins(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, budget_goal_id: nil, account_id: self.id).where('date >= ? and date <= ?',Date.today - 1.month, Date.today).sum(:debit)
   end
   
   def available_to_spend(in_asset_type = self.asset_type)
