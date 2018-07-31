@@ -30,16 +30,13 @@ class Transaction < ApplicationRecord
     end
     
     contains_budgeted_expense = false
-    contains_non_spending_account = false
+    contains_spending_account = false
     active_ledger_entries.each do |le|
-      if le.budget_goal_id.present?
-        contains_budgeted_expense = true
-      elsif le.account.account_type.master_account_type != :expense && !le.account.spending_account?
-        contains_non_spending_account = true if le.account.account_type
-      end
+      contains_budgeted_expense = true if le.budget_goal_id.present?
+      contains_spending_account = true if le.account.spending_account?
     end
     
-    if contains_budgeted_expense && contains_non_spending_account
+    if contains_budgeted_expense && !contains_spending_account
       errors.add(:base, "budgeted spending should only happen from spending accounts")
     end
   end
