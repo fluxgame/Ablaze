@@ -91,7 +91,7 @@ class Account < ApplicationRecord
     
     return nil if budget.nil? || budget == 0
 
-    budget * 12 * self.years_of_transactions - self.balance_as_of(Date.today, in_asset_type)
+    return (budget - self.average_weekly_spending) * 52
   end
   
   def last_months_spending(in_asset_type = self.asset_type)

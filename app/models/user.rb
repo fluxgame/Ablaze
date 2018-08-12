@@ -177,8 +177,8 @@ class User < ApplicationRecord
             am[:savings] -= avg_annual_spend
             am[:expenses] += avg_annual_spend
             puts "+" + avg_annual_spend.to_s + "(" + account.name + ")"
-            am[:post_fi_expenses_pre_tax] += [avg_annual_spend, account.fi_budget * 12].max if account.post_fi_expense?
-            am[:lean_fi_expenses_pre_tax] += (account.fi_budget * 12) if account.lean_fi_expense?
+            am[:post_fi_expenses_pre_tax] += [avg_annual_spend, account.fi_budget * 52].max if account.post_fi_expense?
+            am[:lean_fi_expenses_pre_tax] += (account.fi_budget * 52) if account.lean_fi_expense?
           elsif account.name == "Active Income"
             avg_annual_spend = account.average_weekly_spending(self.home_asset_type, on_date) * 52
             am[:savings] -= avg_annual_spend
@@ -234,7 +234,7 @@ class User < ApplicationRecord
 
     Account.where(user_id: self.id).where('fi_budget > 0').each do |a|
       running_total -= [0,a.available_to_spend].max
-      annual_budget += a.fi_budget * 12
+      annual_budget += a.fi_budget * 52
     end
     
     daily_spend = [0, (annual_budget - annual_spending) / 365].max.to_f
