@@ -173,14 +173,14 @@ class User < ApplicationRecord
           account_type = account.account_type.master_account_type.to_sym
 
           if account_type == :expense
-            avg_annual_spend = account.average_monthly_spending(self.home_asset_type, on_date) * 12
+            avg_annual_spend = account.average_weekly_spending(self.home_asset_type, on_date) * 52
             am[:savings] -= avg_annual_spend
             am[:expenses] += avg_annual_spend
             puts "+" + avg_annual_spend.to_s + "(" + account.name + ")"
             am[:post_fi_expenses_pre_tax] += [avg_annual_spend, account.fi_budget * 12].max if account.post_fi_expense?
             am[:lean_fi_expenses_pre_tax] += (account.fi_budget * 12) if account.lean_fi_expense?
           elsif account.name == "Active Income"
-            avg_annual_spend = account.average_monthly_spending(self.home_asset_type, on_date) * 12
+            avg_annual_spend = account.average_weekly_spending(self.home_asset_type, on_date) * 52
             am[:savings] -= avg_annual_spend
             am[:active_income] -= avg_annual_spend
           elsif [:asset, :liability].include?(account_type)
@@ -211,15 +211,6 @@ class User < ApplicationRecord
     state_deduction = 8800
     
     (annual_spending - federal_deduction * federal_tax_rate - state_deduction * state_tax_rate) / (1 - federal_tax_rate - state_tax_rate)
-  end
-
-  def days_of_work(account)
-    return 0 if !account.post_fi_expense?
-    
-    days_to_lean_fi = self.years_to_fi(self.aggregate_amounts[:lean_fi_expenses]) * 365
-    days_to_full_fi = self.years_to_fi(self.aggregate_amounts[:post_fi_expenses]) * 365
-    days_per_dollar = (days_to_full_fi - days_to_lean_fi) / (self.aggregate_amounts[:post_fi_expenses_pre_tax] - self.aggregate_amounts[:lean_fi_expenses_pre_tax])
-    return (12 * days_per_dollar * ([0, account.average_monthly_spending(self.home_asset_type) - account.fi_budget].max)).round(0)
   end
   
   def forecast_register

@@ -75,12 +75,12 @@ class Account < ApplicationRecord
     end
   end
   
-  def average_monthly_spending(in_asset_type = self.asset_type, on_date = Date.today)
+  def average_weekly_spending(in_asset_type = self.asset_type, on_date = Date.today)
     if [:expense, :income].include? self.account_type.master_account_type.to_sym
       yot = self.years_of_transactions(on_date)
       return 0 if yot <= 0
       yot = 1 if yot > 1
-      return (self.balance_as_of(on_date, in_asset_type) - self.balance_as_of(on_date - 1.year, in_asset_type)+ self.budgeted_amount) / yot / 12
+      return (self.balance_as_of(on_date, in_asset_type) - self.balance_as_of(on_date - 1.year, in_asset_type)+ self.budgeted_amount) / yot / 52
     end
     
     nil
@@ -99,7 +99,7 @@ class Account < ApplicationRecord
   end
   
   def recent_unplanned_spending(in_asset_type = self.asset_type)
-    LedgerEntry.joins(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, budget_goal_id: nil, account_id: self.id).where('date >= ? and date <= ?',Date.today - 1.month, Date.today).sum(:debit)
+    LedgerEntry.joins(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, budget_goal_id: nil, account_id: self.id).where('date >= ? and date <= ?',Date.today - 1.week, Date.today).sum(:debit)
   end
   
   def available_to_spend(in_asset_type = self.asset_type)
@@ -109,7 +109,7 @@ class Account < ApplicationRecord
     
     ats = budget - recent_unplanned_spending(in_asset_type)
     
-    average_spend = average_monthly_spending(in_asset_type)
+    average_spend = average_weekly_spending(in_asset_type)
     
     ats -= (average_spend - budget) ** 1.3 if average_spend > budget
     
