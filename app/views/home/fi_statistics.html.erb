@@ -4,7 +4,7 @@
 	<thead>
 		<tr>
 			<th>Expense</th>
-			<th>Recent Spending</th>
+			<th>Budget</th>
 			<th>Recent Unplanned Spending</th>
 			<th>Average Weekly Spending</th>
 			<th>Available to Spend</th>
@@ -15,7 +15,7 @@
 		<% current_user.expense_accounts.each do |a| %>
 		<tr>
 			<td><%= a.name %></td>
-			<td><%= current_user.home_asset_type.to_currency(a.last_months_spending(current_user.home_asset_type)) %></td>
+			<td><%= a.fi_budget %></td>
 			<td><%= current_user.home_asset_type.to_currency(a.recent_unplanned_spending(current_user.home_asset_type)) %></td>
 			<td><%= current_user.home_asset_type.to_currency(a.average_weekly_spending(current_user.home_asset_type)) %></td>
 			<td><%= current_user.home_asset_type.to_currency(a.available_to_spend(current_user.home_asset_type)) %></td>
