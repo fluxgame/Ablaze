@@ -234,12 +234,13 @@ class User < ApplicationRecord
 
     Account.where(user_id: self.id).where('fi_budget > 0').each do |a|
       running_total -= [0,a.available_to_spend].max
+      annual_spending += [0,a.available_to_spend].max
       annual_budget += a.fi_budget * 52
     end
     
     daily_spend = [0, (annual_budget - annual_spending) / 365].max.to_f
     
-    for d in Date.today..(Date.today + 1.year - 1.day)
+    for d in (Date.today + 1.day)..(Date.today + 1.year - 1.day)
       register[d][:amount] -= daily_spend
     end
 
