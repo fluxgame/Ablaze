@@ -229,12 +229,12 @@ class User < ApplicationRecord
       end
     end
     
-    register[Date.today][:amount] += self.amount_budgeted
+    register[Date.today][:amount] -= self.amount_budgeted
 
     annual_budget = 0
 
     Account.where(user_id: self.id).where('fi_budget > 0').each do |a|
-      register[Date.today][:amount] += [0,a.available_to_spend].max
+      register[Date.today][:amount] -= [0,a.available_to_spend].max
       annual_budget += a.fi_budget * 52
     end
     
