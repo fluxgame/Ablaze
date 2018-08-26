@@ -94,8 +94,10 @@ class Account < ApplicationRecord
     return (budget - self.average_weekly_spending) * 52
   end
   
-  def recent_unplanned_spending(in_asset_type = self.asset_type)
-    LedgerEntry.joins(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, budget_goal_id: nil, account_id: self.id).where('date > ? and date <= ?',Date.today - 1.week, Date.today).sum(:debit)
+  def unplanned_spending_this_week(in_asset_type = self.asset_type)
+    last_sunday = Date.today.beginning_of_week(:sunday)
+    next_sunday = Date.today.next_occurring(:sunday)
+    LedgerEntry.joins(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, budget_goal_id: nil, account_id: self.id).where('date > ? and date < ?',last_sunday, next_sunday).sum(:debit)
   end
   
   def available_to_spend(in_asset_type = self.asset_type)
@@ -103,7 +105,7 @@ class Account < ApplicationRecord
     
     return nil if budget.nil? || budget == 0
     
-    ats = budget - recent_unplanned_spending(in_asset_type)
+    ats = budget - unplanned_spending_this_week(in_asset_type)
     
     average_spend = average_weekly_spending(in_asset_type)
     
