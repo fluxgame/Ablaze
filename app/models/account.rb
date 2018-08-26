@@ -97,7 +97,7 @@ class Account < ApplicationRecord
   def unplanned_spending_this_week(in_asset_type = self.asset_type)
     last_sunday = Date.today.beginning_of_week(:sunday)
     next_sunday = Date.today.next_occurring(:sunday)
-    LedgerEntry.joins(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, budget_goal_id: nil, account_id: self.id).where('date > ? and date < ?',last_sunday, next_sunday).sum(:debit)
+    LedgerEntry.joins(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, budget_goal_id: nil, account_id: self.id).where('date >= ? and date < ?',last_sunday, next_sunday).sum(:debit)
   end
   
   def available_to_spend(in_asset_type = self.asset_type)
