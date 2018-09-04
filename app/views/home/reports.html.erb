@@ -2,9 +2,8 @@
 <%= line_chart ReportDatum.where(user_id: current_user.id).group(:date).sum(:net_worth), 
 	prefix: current_user.home_asset_type.currency_symbol, 
 	points: false,
-	min: 0, max: 1000000,
-	library: { scales: { yAxes: [{ gridLines: { display: true }, 
-	                                                 ticks: { maxTicksLimit: 10 } }]}} %>
+	min: 0,
+	library: { scales: { yAxes: [{ gridLines: { display: true }, ticks: { maxTicksLimit: 10 } }]}} %>
 #	max: current_user.fi_target.round(current_user.home_asset_type.precision) %>
 <h1>Spending and Saving</h1>
 <%= line_chart [{ name: "Annual Spending", 
