@@ -1,9 +1,9 @@
 <h1>Net Worth</h1>
 <%= line_chart ReportDatum.where(user_id: current_user.id).group(:date).sum(:net_worth), 
 	prefix: current_user.home_asset_type.currency_symbol, 
-	points: false, 
-	min: 0, 
-	max: current_user.fi_target.round(current_user.home_asset_type.precision) %>
+	points: false,
+	min: 0 %>
+#	max: current_user.fi_target.round(current_user.home_asset_type.precision) %>
 <h1>Spending and Saving</h1>
 <%= line_chart [{ name: "Annual Spending", 
 		data: ReportDatum.where(user_id: current_user.id).group(:date).sum(:annual_post_fi_spending) },
@@ -17,4 +17,3 @@
 <%= line_chart @fi_date_data, 
 	points: false,
 	min: 0 %>
-#	min: Date.today.to_time.to_i / (60 * 60 * 24) %>

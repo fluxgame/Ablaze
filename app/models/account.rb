@@ -124,7 +124,6 @@ class Account < ApplicationRecord
   
   def post_fi_expense?
     !['Interest Expense','MA Taxes','Federal Taxes','Payroll Taxes'].include?(name)    
-#    ['Housing','Transportation','Pets','Health','Discretionary - Joint','Discretionary - Dave','Discretionary - Jess'].include?(name)
   end
   
   def lean_fi_expense?
