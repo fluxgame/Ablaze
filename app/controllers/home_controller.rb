@@ -1,6 +1,6 @@
 class HomeController < ApplicationController
   def reports
-    @fi_date_data = [{name: "Lean FI Date", data: []},{name: "Full FI Date", data: []}]
+    @fi_date_data = [{name: "Days to Lean FI", data: []},{name: "Days to Full FI", data: []},{name: "Lean FI Date", data: []},{name: "Full FI Date", data: []}]
     
     current_user.report_data.each do |rd|
       lean_fi_date = current_user.fi_date(current_user.aggregate_amounts[:lean_fi_expenses], rd.net_worth, rd.annual_savings, rd.average_rate_of_return)
