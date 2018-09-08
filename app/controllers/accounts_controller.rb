@@ -11,11 +11,10 @@ class AccountsController < ApplicationController
   # GET /accounts/1
   # GET /accounts/1.json
   def show
-    if params[:show_reconciled].nil?
-      @ledger_entries = LedgerEntry.where(account_id: @account.id, account_reconciliation_id: nil).order(date: :asc)
-    else
-      @ledger_entries = LedgerEntry.where(account_id: @account.id).order(date: :asc)
-    end
+    @ledger_entries = LedgerEntry.where(account_id: @account.id).order(date: :asc)
+    
+    @ledger_entries.where(account_reconciliation_id: nil) if params[:show_reconciled].nil?
+    @ledger_entries.where('date > ?', Date.today - param[:days].to_i) if params[:days].to_i > 0
   end
 
   # GET /accounts/new
