@@ -13,8 +13,8 @@ class AccountsController < ApplicationController
   def show
     @ledger_entries = LedgerEntry.where(account_id: @account.id).order(date: :asc)
     
-    @ledger_entries.where(account_reconciliation_id: nil) if params[:show_reconciled].nil?
-    @ledger_entries.where('date > ?', Date.today - params[:days].to_i.days) if params[:days].to_i > 0
+    @ledger_entries = @ledger_entries.where(account_reconciliation_id: nil) if params[:show_reconciled].nil?
+    @ledger_entries = @ledger_entries.where('date > ?', Date.today - params[:days].to_i.days) if params[:days].to_i > 0
   end
 
   # GET /accounts/new
