@@ -95,14 +95,6 @@ class Transaction < ApplicationRecord
     end
   end
   
-  def master_ledger_entry
-    LedgerEntry.where(transaction_id: self.id).includes(account: :account_type).where(account_types: {name: ["Bank", "Current Liability"]}).first
-  end
-  
-  def slave_ledger_entries
-    LedgerEntry.where(transaction_id: self.id).where.not(id: master_ledger_entry.id)
-  end
-      
   def balanced?
     credits = total_credits(user.home_asset_type).round(user.home_asset_type.precision) 
     debits = total_debits(user.home_asset_type).round(user.home_asset_type.precision)
