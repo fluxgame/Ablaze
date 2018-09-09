@@ -1,9 +1,11 @@
 {
 			"id": "<%= transaction.id.to_s %>",
-			"date": "<%= local_assigns[:master_ledger_entry].date.to_s %>",
+			"date": "<%= local_assigns[:master_ledger_entry].date.to_s %>",x
 			"description": "<%= transaction.description %>",
 			"masterLedgerEntry": <%= render local_assigns[:master_ledger_entry] %>,
 			"slaveLedgerEntries": [
-				<%= transaction.ledger_entries.map { |le| render le if le.id != local_assigns[:master_ledger_entry].id }.join(", ").html_safe %>
+				<%= transaction.ledger_entries
+							.select { |le| le.id != local_assigns[:master_ledger_entry].id }
+							.map { |le| render le }.join(", ").html_safe %>
 			]
 }
