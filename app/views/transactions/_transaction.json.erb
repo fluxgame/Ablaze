@@ -1,6 +1,6 @@
 {
 			"id": "<%= transaction.id.to_s %>",
-			"date": "<%= transaction.master_ledger_entry.date.to_s %>",
+			"date": "<%= local_assigns[:master_ledger_entry].date.to_s %>",
 			"description": "<%= transaction.description %>",
 			"masterLedgerEntry": <%= render local_assigns[:master_ledger_entry] %>,
 			"slaveLedgerEntries": [
