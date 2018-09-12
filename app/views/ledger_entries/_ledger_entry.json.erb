@@ -3,5 +3,7 @@
 "account": <%= render 'accounts/account', account: ledger_entry.account, simple: true %>,
 "budgetGoal": <%= render 'budget_goals/budget_goal', budget_goal: ledger_entry.budget_goal.nil? ? BudgetGoal.new(user: current_user) : ledger_entry.budget_goal, simple: true %>,
 "amount": "<%= (ledger_entry.debit.nil? ? ledger_entry.credit : ledger_entry.debit) %>",
-"debit": <%= ledger_entry.debit.nil? ? false : true %>
+"debit": <%= ledger_entry.debit.nil? ? false : true %>,
+"date": "<%= ledger_entry.date.to_s %>"<% if !local_assigns[:simple] %>,
+"parentTransaction": <%= render ledger_entry.parent_transaction, simple: true %><% end %>
 }

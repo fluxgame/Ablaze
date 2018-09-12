@@ -27,6 +27,7 @@ Rails.application.routes.draw do
   resources :asset_types
   
   get '/ledger_entries/:id/toggle_cleared', to: 'ledger_entries#toggle_cleared', as: 'toggle_cleared_ledger_entry'
+  get '/ledger_entries/', to: 'ledger_entries#index'
   
   # resources :ledger_entries do
   #   member do

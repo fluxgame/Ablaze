@@ -1,0 +1,5 @@
+{
+	"ledgerEntries": [
+	<%= @ledger_entries.map { |le| render le }.join(", ").html_safe %>
+]
+}

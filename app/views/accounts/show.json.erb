@@ -1,5 +1,0 @@
-{
-	"transactions": [
-		<%= @ledger_entries.map { |le| render le.parent_transaction, master_ledger_entry: le }.join(", ").html_safe %>
-	]
-}
