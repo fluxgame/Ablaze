@@ -80,7 +80,7 @@ class Account < ApplicationRecord
       yot = self.years_of_transactions(on_date)
       return 0 if yot <= 0
       yot = 1 if yot > 1
-      return (self.balance_as_of(on_date, in_asset_type) - self.balance_as_of(on_date.end_of_week(:sunday) - 53.weeks, in_asset_type) + self.budgeted_amount) / yot / 52
+      return (self.balance_as_of(on_date.beginning_of_week(:sunday) - 1.day, in_asset_type) - self.balance_as_of(on_date.end_of_week(:sunday) - 53.weeks, in_asset_type) + self.budgeted_amount) / yot / 52
     end
     
     nil
