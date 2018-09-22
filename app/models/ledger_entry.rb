@@ -6,7 +6,7 @@ class LedgerEntry < ApplicationRecord
   belongs_to :account_balance, optional: true
   
   before_save :verify_self
-  after_save :after_amount_changed, :credit_changed? || :debit_changed?
+  after_save :after_save
   around_destroy :do_destroy
   
   def verify_self
@@ -25,8 +25,9 @@ class LedgerEntry < ApplicationRecord
     throw :abort if errors.count > 0
   end
       
-  def after_amount_changed
-    invalidate_account_balances(self.account_id, self.date)
+  def after_save
+    invalidate_account_balances if :credit_changed? || :debit_changed? || :account_changed? || :date_changed?
+    invalidate_account_balances(self.account_id_was, self.date_was) if :account_changed? || :date_changed?
   end
   
   def do_destroy
@@ -35,15 +36,13 @@ class LedgerEntry < ApplicationRecord
     
     yield
 
-    invalidate_account_balances(this_account_id, this_date)  
+    invalidate_account_balances
   end
   
-  def invalidate_account_balances(account_id, date)
-    LedgerEntry.where('date >= ?', self.date).where(account_id: self.account_id).update_all(account_balance_id: nil)
-#    AccountBalance.includes(:ledger_entries).where(ledger_entries: {id: nil}).destroy_all
-    AccountBalance.where('date >= ?', self.date).where(account_id: self.account_id).delete_all
-#    ActiveRecord::Base.connection.execute("delete from account_balances where date >= '"+self.date.to_s+"' and not exists(select 1 from ledger_entries le where account_balances.id = le.account_balance_id)")
-    ReportDatum.where('date >= ?', self.date).where(user_id: self.account.user_id).delete_all
+  def invalidate_account_balances(this_account_id = self.account_id, this_date: self.date)
+    LedgerEntry.where('date >= ?', this_date).where(account_id: this_account_id).update_all(account_balance_id: nil)
+    AccountBalance.where('date >= ?', this_date).where(account_id: this_account_id).delete_all
+    ReportDatum.where('date >= ?', this_date).where(user_id: this_account.user_id).delete_all
   end
   
   def readonly?
