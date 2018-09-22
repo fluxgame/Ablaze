@@ -39,7 +39,7 @@ class LedgerEntry < ApplicationRecord
     invalidate_account_balances
   end
   
-  def invalidate_account_balances(this_account_id = self.account_id, this_date: self.date)
+  def invalidate_account_balances(this_account_id = self.account_id, this_date = self.date)
     LedgerEntry.where('date >= ?', this_date).where(account_id: this_account_id).update_all(account_balance_id: nil)
     AccountBalance.where('date >= ?', this_date).where(account_id: this_account_id).delete_all
     ReportDatum.where('date >= ?', this_date).where(user_id: Account.find(this_account_id).user.id).delete_all
