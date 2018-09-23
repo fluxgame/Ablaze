@@ -1,8 +1,8 @@
 { 
 	"id": "<%= account.id %>",  
 	"name": "<%= account.name %>"<% if !local_assigns[:simple] && account.account_type.master_account_type.to_sym == :expense %>,
-	"availableToSpend": "<%= account.available_to_spend.round(account.asset_type.precision) %>"<% elsif !local_assigns[:simple] && account.asset_or_liability? %>,
-	"currentBalance": "<%= account.current_balance.round(account.asset_type.precision) %>"<% end %><% if !local_assigns[:simple] %>,
+	"availableToSpend": "<%= account.available_to_spend %>"<% elsif !local_assigns[:simple] && account.asset_or_liability? %>,
+	"currentBalance": "<%= account.current_balance %>"<% end %><% if !local_assigns[:simple] %>,
 	"budgetGoals": [
 		<%= account.budget_goals.map { |a| render a }.join(", ").html_safe %>
 	]<% end %>

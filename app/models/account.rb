@@ -113,7 +113,7 @@ class Account < ApplicationRecord
     
     ats -= (average_spend - budget) ** 1.3 if average_spend > budget
     
-    ats
+    ats.round(self.asset_type.precision)
   end
   
   def budgeted_amount
