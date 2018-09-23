@@ -23,9 +23,7 @@ class LedgerEntry < ApplicationRecord
     end
 
     throw :abort if errors.count > 0
-  end
-      
-  def after_save
+    
     puts ""
     puts ""
     puts ""
@@ -33,8 +31,12 @@ class LedgerEntry < ApplicationRecord
     puts ""
     puts ""
     puts ""
+
+    invalidate_account_balances(self.account_id_was, self.date_was) if :account_changed? || :date_changed?    
+  end
+      
+  def after_save
     invalidate_account_balances if :credit_changed? || :debit_changed? || :account_changed? || :date_changed?
-    invalidate_account_balances(self.account_id_was, self.date_was) if :account_changed? || :date_changed?
   end
   
   def do_destroy
