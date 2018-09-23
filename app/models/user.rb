@@ -108,7 +108,7 @@ class User < ApplicationRecord
   def fi_target(annual_spending = self.aggregate_amounts[:post_fi_expenses], 
     rate_of_return = self.aggregate_amounts[:average_rate_of_return])
     
-    Exonio.pv((1+rate_of_return)/(1+inflation_rate)-1, (death_date - Date.today)/365, annual_spending * -1, 0)
+    Exonio.pv((1+rate_of_return)/(1+inflation_rate)-1, (death_date - Date.today)/365.25, annual_spending * -1, 0)
 #    annual_spending / self.withdrawal_rate
   end
   
@@ -138,7 +138,7 @@ class User < ApplicationRecord
     return nil if ytfi.nil? || ytfi == "NaN"
     date = Date.today
     date += ytfi.floor.years
-    ytfi = (ytfi - ytfi.floor) * 365    
+    ytfi = (ytfi - ytfi.floor) * 365.25    
     date += ytfi.floor.days    
     return date
   end
@@ -173,14 +173,14 @@ class User < ApplicationRecord
           account_type = account.account_type.master_account_type.to_sym
 
           if account_type == :expense
-            avg_annual_spend = account.average_weekly_spending(self.home_asset_type, on_date) * 52
+            avg_annual_spend = account.average_weekly_spending(self.home_asset_type, on_date) * (365.25 / 7)
+            annual_fi_budget = account.fi_budget * (365.25 / 7)
             am[:savings] -= avg_annual_spend
             am[:expenses] += avg_annual_spend
-            puts "+" + avg_annual_spend.to_s + "(" + account.name + ")"
-            am[:post_fi_expenses_pre_tax] += [avg_annual_spend, account.fi_budget * 52].max if account.post_fi_expense?
-            am[:lean_fi_expenses_pre_tax] += (account.fi_budget * 52) if account.lean_fi_expense?
+            am[:post_fi_expenses_pre_tax] += [avg_annual_spend, annual_fi_budget].max if account.post_fi_expense?
+            am[:lean_fi_expenses_pre_tax] += [avg_annual_spend, annual_fi_budget].max if account.lean_fi_expense?
           elsif account.name == "Active Income"
-            avg_annual_spend = account.average_weekly_spending(self.home_asset_type, on_date) * 52
+            avg_annual_spend = account.average_weekly_spending(self.home_asset_type, on_date) * (365.25 / 7)
             am[:savings] -= avg_annual_spend
             am[:active_income] -= avg_annual_spend
           elsif [:asset, :liability].include?(account_type)
@@ -234,7 +234,7 @@ class User < ApplicationRecord
     Account.where(user_id: self.id).where('fi_budget > 0').each do |a|
       register[Date.today][:amount] -= [0,a.available_to_spend].max
       annual_spending += [0,a.available_to_spend].max
-      annual_budget += a.fi_budget * 52
+      annual_budget += a.fi_budget * (365.25 / 7)
     end
     
     self.budget_goals.each do |goal|
@@ -242,7 +242,7 @@ class User < ApplicationRecord
       annual_spending += goal.remaining_amount if !goal.account.nil?
     end
     
-    daily_spend = [0, (annual_budget - annual_spending) / 365].max.to_f
+    daily_spend = [0, (annual_budget - annual_spending) / 365.25].max.to_f
     
     for d in (Date.today + 1.day)..(Date.today + 1.year - 1.day)
       register[d][:amount] -= daily_spend
