@@ -26,7 +26,13 @@ class LedgerEntry < ApplicationRecord
   end
       
   def after_save
-    puts "account_id was: " + self.account_id_was + ", account_id now: " + self.account_id
+    puts ""
+    puts ""
+    puts ""
+    puts "account_id was: " + self.account_id_was.to_s + ", account_id now: " + self.account_id.to_s
+    puts ""
+    puts ""
+    puts ""
     invalidate_account_balances if :credit_changed? || :debit_changed? || :account_changed? || :date_changed?
     invalidate_account_balances(self.account_id_was, self.date_was) if :account_changed? || :date_changed?
   end
