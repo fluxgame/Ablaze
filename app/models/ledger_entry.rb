@@ -24,7 +24,7 @@ class LedgerEntry < ApplicationRecord
 
     throw :abort if errors.count > 0
     
-    if self.account_id != self.account_is_was || self.date != self.date_was
+    if self.account_id != self.account_id_was || self.date != self.date_was
       invalidate_account_balances(self.account_id_was, self.date_was)
       invalidate_account_balances
     end
