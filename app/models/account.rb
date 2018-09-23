@@ -77,6 +77,7 @@ class Account < ApplicationRecord
   
   def average_weekly_spending(in_asset_type = self.asset_type, on_date = Date.today)
     if [:expense, :income].include? self.account_type.master_account_type.to_sym
+      on_date = on_date.beginning_of_week(:sunday) - 1
       yot = self.years_of_transactions(on_date)
       return 0 if yot <= 0
       yot = 1 if yot > 1
@@ -92,7 +93,7 @@ class Account < ApplicationRecord
     
     return nil if budget.nil? || budget == 0
 
-    return (budget - self.average_weekly_spending) * 52 - self.budgeted_amount
+    return (budget - self.average_weekly_spending) * 52 - self.budgeted_amount - self.available_to_spend
   end
   
   def unplanned_spending_this_week(in_asset_type = self.asset_type)
