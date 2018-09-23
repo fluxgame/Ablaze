@@ -71,7 +71,7 @@ class Account < ApplicationRecord
     if first_transaction.nil?
       return 0
     else
-      return (on_date - first_transaction.date) / 365
+      return (on_date - first_transaction.date) / 365.25
     end
   end
   
@@ -93,7 +93,7 @@ class Account < ApplicationRecord
     
     return nil if budget.nil? || budget == 0
 
-    return (budget - self.average_weekly_spending) * 52 - self.budgeted_amount - self.available_to_spend
+    return (budget - self.average_weekly_spending) * (365.25 / 7) - self.budgeted_amount - self.available_to_spend
   end
   
   def unplanned_spending_this_week(in_asset_type = self.asset_type)
