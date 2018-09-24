@@ -12,8 +12,8 @@
 		<tr>
 			<td><%= date %></td>
 			<td><%= line[:amount] %></td>
-			<td><%= line[:spending] %></td>
-			<td><%= line[:running_total] %></td>
+			<td><%= current_user.home_asset_type.to_currency(line[:spending]) %></td>
+			<td><%= current_user.home_asset_type.to_currency(line[:running_total]) %></td>
 		</tr>
 		<% end %>
 	</tbody>

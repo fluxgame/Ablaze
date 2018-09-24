@@ -244,7 +244,7 @@ class User < ApplicationRecord
 #      annual_spending += reserved if goal.account.post_fi_expense?
     end
     
-    daily_spend = [0, (annual_budget - annual_spending) / 365.25].max.to_f
+    daily_spend = [0, (annual_budget - annual_spending) / 365.25].max.round(self.home_asset_type.precision)
     
     for d in (Date.today + 1.day)..(Date.today + 1.year - 1.day)
       register[d][:amount] -= daily_spend
