@@ -11,7 +11,7 @@
 		<% current_user.forecast_register.each do |date,line| %>
 		<tr>
 			<td><%= date %></td>
-			<td><%= line[:amount] %></td>
+			<td><%= current_user.home_asset_type.to_currency(line[:amount]) %></td>
 			<td><%= current_user.home_asset_type.to_currency(line[:spending]) %></td>
 			<td><%= current_user.home_asset_type.to_currency(line[:running_total]) %></td>
 		</tr>
