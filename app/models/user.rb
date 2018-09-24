@@ -231,7 +231,7 @@ class User < ApplicationRecord
     
     annual_budget = 0
 
-    Account.where(user_id: self.id).filter{ |a| a.post_fi_expense? }.each do |a|
+    Account.where(user_id: self.id).select{ |a| a.post_fi_expense? }.each do |a|
       reserved = [0,a.available_to_spend].max
       register[Date.today][:amount] -= reserved
       annual_spending += reserved
