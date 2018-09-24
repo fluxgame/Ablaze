@@ -254,7 +254,7 @@ class User < ApplicationRecord
 
     register.each do |date,line|
       running_total += line[:amount]
-      line[:running_total] = running_total
+      line[:running_total] = running_total.round(self.home_asset_type.precision)
     end
     
     register.sort_by { |key, v| v[:running_total] }.to_h
