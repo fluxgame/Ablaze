@@ -69,9 +69,9 @@ class User < ApplicationRecord
     }
   end
       
-#  def spendable_at_start_of_today
-#    self.aggregate_amounts(Date.today - 1)[:current_spending_balance]
-#  end
+  def spendable_at_start_of_today
+    self.aggregate_amounts(Date.today - 1)[:current_spending_balance]
+  end
   
   def spending_today
     Rails.cache.fetch("#{cache_key}/spending_today", expires_in: 1.minute) {

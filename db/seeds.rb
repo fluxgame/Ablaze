@@ -97,10 +97,9 @@ CSV.foreach("db/seed_budget_goals.csv", :headers => true, :return_headers => fal
     t.id = row[0]
     t.name = row[2]
     t.user = user
+    t.budgeted_amount = row[1]
     t.save
   end
-  
-  bg.budgeted_amounts.create! amount: row[1], date: Date.today
 end
 
 ActiveRecord::Base.connection.execute("SELECT setval('budget_goals_id_seq', (SELECT max(id) FROM budget_goals));")

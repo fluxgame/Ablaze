@@ -16,6 +16,11 @@
     <%= form.text_field :name, id: :budget_goal_name %>
   </div>
 
+  <div class="field">
+    <%= form.label :remaining_amount %>
+    <%= form.text_field :remaining_amount, id: :budget_goal_remaining_amount %>
+  </div>
+
 	<div class="field">
 		<%= form.label :account_id %>
 		<%= form.select(:account_id, Account.all.collect {|a| [a.name, a.id]}) -%>

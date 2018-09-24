@@ -1,11 +1,6 @@
 <p id="notice"><%= notice %></p>
 
 <p>
-  <strong>Remaining amount:</strong>
-  <%= @budget_goal.remaining_amount %>
-</p>
-
-<p>
   <strong>Name:</strong>
   <%= @budget_goal.name %>
 </p>
@@ -15,22 +10,18 @@
   <%= @budget_goal.account.name %>
 </p>
 
+<p>
+  <strong>Budgeted Amount:</strong>
+  <%= current_user.home_asset_type.to_currency(@budget_goal.budgeted_amount) %>
+</p>
+
+<p>
+  <strong>Remaining Amount:</strong>
+  <%= current_user.home_asset_type.to_currency(@budget_goal.remaining_amount) %>
+</p>
+
 <%= link_to 'Edit', edit_budget_goal_path(@budget_goal) %> |
 <%= link_to 'Back', budget_goals_path %>
-
-<table>
-	<tr>
-	<th>Date</th>
-	<th>Amount</th>
-</tr>
-    <% @budget_goal.budgeted_amounts.each do |ba| %>
-<tr>
-	<td><%= ba.date %></td>
-	<td><%= current_user.home_asset_type.to_currency(ba.amount) %></td>
-</tr>
-	<% end %>
-</table>
-
 
 <table>
 	<tr>
@@ -45,8 +36,8 @@
 <tr>
 	<td><%= ledger_entry.date %></td>
 	<td><%= ledger_entry.parent_transaction.description %></td>
-	<td><%= ledger_entry.debit %></td>
-	<td><%= ledger_entry.credit %></td>
+	<td><%= current_user.home_asset_type.to_currency(ledger_entry.debit) %></td>
+	<td><%= current_user.home_asset_type.to_currency(ledger_entry.credit) %></td>
     <td><%= link_to 'Edit', ledger_entry.parent_transaction %></td>
 </tr>
 <% end %>

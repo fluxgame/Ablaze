@@ -4,7 +4,7 @@ class BudgetGoalsController < ApplicationController
   # GET /budget_goals
   # GET /budget_goals.json
   def index
-    @budget_goals = BudgetGoal.where(user_id: current_user.id)
+    @accounts = Account.joins(:budget_goals).select("DISTINCT accounts.*").where(user_id: current_user.id)
   end
 
   # GET /budget_goals/1
@@ -70,6 +70,6 @@ class BudgetGoalsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def budget_goal_params
-      params.require(:budget_goal).permit(:budgeted_amount, :name, :user_id, :account_id)
+      params.require(:budget_goal).permit(:budgeted_amount, :name, :user_id, :account_id, :remaining_amount)
     end
 end

@@ -4,6 +4,6 @@
 	"availableToSpend": "<%= account.available_to_spend %>"<% elsif !local_assigns[:simple] && account.asset_or_liability? %>,
 	"currentBalance": "<%= account.current_balance %>"<% end %><% if !local_assigns[:simple] %>,
 	"budgetGoals": [
-		<%= account.budget_goals.map { |a| render a }.join(", ").html_safe %>
+		<%= account.budget_goals.select{ |bg| bg.remaining_amount > 0 }.map { |bg| render bg }.join(", ").html_safe %>
 	]<% end %>
 }
