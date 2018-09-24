@@ -105,7 +105,7 @@ class Account < ApplicationRecord
   def available_to_spend(in_asset_type = self.asset_type)
     budget = self.asset_type.exchange(self.fi_budget, in_asset_type)
     
-    return nil if budget.nil? || budget == 0
+    return 0 if budget.nil? || budget == 0
     
     ats = budget - unplanned_spending_this_week(in_asset_type)
     
