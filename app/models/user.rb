@@ -239,7 +239,7 @@ class User < ApplicationRecord
     
     self.budget_goals.each do |goal|
       register[Date.today][:amount] -= goal.remaining_amount
-      annual_spending += goal.remaining_amount if !goal.account.nil?
+      annual_spending += goal.remaining_amount
     end
     
     daily_spend = [0, (annual_budget - annual_spending) / 365.25].max.to_f
