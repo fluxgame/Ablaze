@@ -231,18 +231,18 @@ class User < ApplicationRecord
     
     annual_budget = 0
 
-#    Account.where(user_id: self.id).where('fi_budget > 0').each do |a|
-    Account.where(user_id: self.id).each do |a|
-      reserved = [0,a.budgeted_amount].max + [0,a.available_to_spend].max
+    Account.where(user_id: self.id).where('fi_budget > 0').each do |a|
+      reserved = [0,a.available_to_spend].max
       register[Date.today][:amount] -= reserved
       annual_spending += reserved
       annual_budget += [a.fi_budget,a.average_weekly_spending].max * (365.25 / 7)
     end
     
-#    self.budget_goals.each do |goal|
-#      register[Date.today][:amount] -= goal.remaining_amount
-#      annual_spending += goal.remaining_amount
-#    end
+   self.budget_goals.each do |goal|
+      reserved = [0,goal.remaining_amount].max
+      register[Date.today][:amount] -= reserved
+      annual_spending += reserved if goal.account.post_fi_expense?
+    end
     
     daily_spend = [0, (annual_budget - annual_spending) / 365.25].max.to_f
     
