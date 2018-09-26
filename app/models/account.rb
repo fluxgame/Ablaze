@@ -80,9 +80,7 @@ class Account < ApplicationRecord
       on_date = on_date.beginning_of_week(:sunday) - 1
       yot = self.years_of_transactions(on_date)
       return 0 if yot <= 0
-      yot = 1 if yot > 1
       return self.balance_as_of(on_date) / yot / (365.25 / 7)
-#      return (self.balance_as_of(on_date.beginning_of_week(:sunday) - 1.day, in_asset_type) - self.balance_as_of(on_date.end_of_week(:sunday) - 53.weeks, in_asset_type)) / yot / 52
     end
     
     nil
@@ -129,7 +127,7 @@ class Account < ApplicationRecord
   end
   
   def lean_fi_expense?
-    ['Food','Transportation','Housing','Health','Pets'].include?(name)
+    ['Food','Transportation','Housing','Health','Pets'].include?(name) 
   end
   
   def expected_annual_return
