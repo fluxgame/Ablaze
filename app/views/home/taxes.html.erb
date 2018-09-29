@@ -1,3 +1,8 @@
+<p>Income: <%= current_user.home_asset_type.to_currency(@taxable_income) %></p>
+<p>Deductions: <%= current_user.home_asset_type.to_currency(@deductions) %></p>
+<p>Projected Taxable Income: <%= current_user.home_asset_type.to_currency(@projected_taxable) %></p>
+
 <% @taxable_amounts.each do |account,amount| %>
 <p><%= account %>: <%= current_user.home_asset_type.to_currency(amount) %></p>
 <% end %>
+

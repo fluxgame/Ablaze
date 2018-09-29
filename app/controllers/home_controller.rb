@@ -25,9 +25,28 @@ class HomeController < ApplicationController
         .where('date >= ? and date <= ?', start_date, end_date)
     
     @taxable_amounts = Hash.new
+    @taxable_income = 0
+    @deductions = 0
     taxable_ledger_entries.each do |le|
+      amount = le.amount_in(current_user.home_asset_type) 
+      account_type = le.account.account_type.master_account_type.to_sym
+
       @taxable_amounts[le.account.name] = 0 if @taxable_amounts[le.account.name].nil?
-      @taxable_amounts[le.account.name] += le.amount_in(current_user.home_asset_type)
+      @taxable_amounts[le.account.name] -= amount
+      
+      if :income == account_type
+        @taxable_income -= amount
+      else
+        @deductions -= amount
+      end
     end
+    
+    if end_date < Date.today
+      @year_progress = 1
+    else
+      @year_progress = Date.today.yday.to_f / end_date.yday.to_f
+    end
+    
+    @projected_taxable = (@taxable_income - @deductions) / @year_progress
   end
 end
