@@ -21,13 +21,13 @@ class HomeController < ApplicationController
     end_date = start_date + 1.year - 1.day
     
     taxable_ledger_entries = LedgerEntry.includes(:parent_transaction)
-        .where(transactions: {user_id: current_user.id, prototype_transaction_id: nil}, tax_related: true)
+        .where(transactions: {user_id: current_user.id}, tax_related: true)
         .where('date >= ? and date <= ?', start_date, end_date)
     
     @taxable_amounts = Hash.new
     taxable_ledger_entries.each do |le|
       @taxable_amounts[le.account.name] = 0 if @taxable_amounts[le.account.name].nil?
-      @taxable_amounts[le.account.name] += (le.debit.nil? ? 0 : le.debit) - (le.credit.nil? ? 0 : le.credit)
+      @taxable_amounts[le.account.name] += le.amount_in(current_user.home_asset_type)
     end
   end
 end
