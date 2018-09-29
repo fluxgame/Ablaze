@@ -6,6 +6,7 @@
 	<td><%= form.text_field :debit, id: :ledger_entry_debit %></td>
 	<td><%= form.text_field :credit, id: :ledger_entry_credit %></td>
 	<td><%= form.check_box :cleared ,id: :ledger_entry_cleared %></td>
+	<td><%= form.check_box :tax_related ,id: :ledger_entry_tax_related %></td>
 	<td><%= form.submit %></td>
 	</tr>
 <% end %>

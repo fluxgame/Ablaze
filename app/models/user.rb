@@ -76,7 +76,7 @@ class User < ApplicationRecord
   def spending_today
     Rails.cache.fetch("#{cache_key}/spending_today", expires_in: 1.minute) {
       spending = 0
-      LedgerEntry.includes(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, date: Date.today).each do |le|
+      LedgerEntry.includes(:parent_transaction).where(transactions: {user_id: self.id, prototype_transaction_id: nil}, date: Date.today).each do |le|
         amount = le.amount_in(self.home_asset_type)
         
         # subtract changes to spending accounts (outflow increases spending, inflow decreases spending)

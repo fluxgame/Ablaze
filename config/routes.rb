@@ -5,6 +5,8 @@ Rails.application.routes.draw do
   get 'home/reports'
   get 'home/forecasting'
   get 'home/fi_statistics'
+  get 'home/taxes'
+  get 'home/taxes/:year', to: 'home#taxes'
   
   resources :future_account_balances
   resources :account_reconciliations

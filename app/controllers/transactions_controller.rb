@@ -39,6 +39,7 @@ class TransactionsController < ApplicationController
 
     @transaction.ledger_entries.each do |le|
       le.cleared = false if le.cleared.nil?
+      le.tax_related = false if le.tax_related.nil?
     end
     
     respond_to do |format|
@@ -65,6 +66,7 @@ class TransactionsController < ApplicationController
       
       @transaction.ledger_entries.each do |le|
         le.cleared = LedgerEntry.find(le.id).cleared if le.cleared.nil?
+        le.tax_related = LedgerEntry.find(le.id).tax_related if le.tax_related.nil?
       end
       
       if @transaction.save
@@ -105,6 +107,6 @@ class TransactionsController < ApplicationController
     # Never trust parameters from the scary internet, only allow the white list through.
     def transaction_params
       params.require(:transaction).permit(:date, :repeat_frequency, :description, 
-          ledger_entries_attributes: [:id, :account_id, :budget_goal_id, :debit, :credit, :cleared, :date, :_destroy])
+          ledger_entries_attributes: [:id, :account_id, :budget_goal_id, :debit, :credit, :cleared, :tax_related, :date, :_destroy])
     end
 end

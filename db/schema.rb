@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_09_24_011404) do
+ActiveRecord::Schema.define(version: 2018_09_29_152027) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -100,6 +100,7 @@ ActiveRecord::Schema.define(version: 2018_09_24_011404) do
     t.bigint "account_balance_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "tax_related", default: false, null: false
     t.index ["account_balance_id"], name: "index_ledger_entries_on_account_balance_id"
     t.index ["account_id"], name: "index_ledger_entries_on_account_id"
     t.index ["account_reconciliation_id"], name: "index_ledger_entries_on_account_reconciliation_id"
