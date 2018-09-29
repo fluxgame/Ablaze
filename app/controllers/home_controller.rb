@@ -37,7 +37,7 @@ class HomeController < ApplicationController
       if :income == account_type
         @taxable_income -= amount
       else
-        @deductions -= amount
+        @deductions += amount
       end
     end
     
