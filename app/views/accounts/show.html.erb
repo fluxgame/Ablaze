@@ -63,6 +63,7 @@
 	<th>Debit</td>
 	<th>Credit</th>
 	<% if @account.account_type.reconcileable? %><th>Cleared</th><% end %>
+	<th>Tax-Related</th>
 	<th></th>
 	<th></th>
 	</tr>
@@ -93,6 +94,7 @@
 	R
 <% end %>
 	</td><% end %>
+	<td><%= ledger_entry.tax_related? ? "Y" : "N" %></td>
     <td><%= link_to 'Edit', ledger_entry.parent_transaction %></td>
 	<td><%= link_to 'Destroy', ledger_entry.parent_transaction, method: :delete, data: { confirm: 'Are you sure?' } %></td>
 </tr>
