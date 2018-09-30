@@ -103,7 +103,7 @@ class Account < ApplicationRecord
   def this_weeks_budget(in_asset_type = self.asset_type)
     twb = self.asset_type.exchange(self.fi_budget, in_asset_type)
     
-    return 0 if budget.nil? || budget == 0
+    return 0 if twb.nil? || twb == 0
     
     twb -= (average_spend - twb) ** 1.3 if average_weekly_spending(in_asset_type) > twb
     
