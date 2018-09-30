@@ -91,7 +91,7 @@ class Account < ApplicationRecord
     
     return nil if budget.nil? || budget == 0
 
-    return (budget - self.average_weekly_spending) * (365.25 / 7) - self.budgeted_amount - self.available_to_spend
+    return (budget - [0,self.average_weekly_spending].max) * (365.25 / 7) - self.budgeted_amount - [0,self.available_to_spend].max
   end
   
   def unplanned_spending_this_week(in_asset_type = self.asset_type)
