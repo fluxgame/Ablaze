@@ -91,7 +91,7 @@ class Account < ApplicationRecord
     
     return nil if budget.nil? || budget == 0
 
-    return (budget - [0,self.average_weekly_spending].max) * (365.25 / 7) - self.budgeted_amount - [0,self.available_to_spend].max
+    return (budget - [0,self.average_weekly_spending(this_weeks_budget)].max) * (365.25 / 7) - self.budgeted_amount - [0,self.this_weeks_budget(in_asset_type)].max
   end
   
   def unplanned_spending_this_week(in_asset_type = self.asset_type)
@@ -100,18 +100,20 @@ class Account < ApplicationRecord
     LedgerEntry.joins(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, budget_goal_id: nil, account_id: self.id).where('date >= ? and date < ?',last_sunday, next_sunday).sum(:debit)
   end
   
-  def available_to_spend(in_asset_type = self.asset_type)
-    budget = self.asset_type.exchange(self.fi_budget, in_asset_type)
+  def this_weeks_budget(in_asset_type = self.asset_type)
+    twb = self.asset_type.exchange(self.fi_budget, in_asset_type)
     
     return 0 if budget.nil? || budget == 0
     
-    ats = budget - unplanned_spending_this_week(in_asset_type)
-    
     average_spend = average_weekly_spending(in_asset_type)
     
-    ats -= (average_spend - budget) ** 1.3 if average_spend > budget
+    twb -= (average_spend - budget) ** 1.3 if average_spend > twb
     
-    ats.round(self.asset_type.precision)
+    twb.round(self.asset_type.precision)
+  end
+  
+  def available_to_spend(in_asset_type = self.asset_type)
+    self.this_weeks_budget(in_asset_type) - unplanned_spending_this_week(in_asset_type)
   end
   
   def budgeted_amount
