@@ -105,9 +105,7 @@ class Account < ApplicationRecord
     
     return 0 if budget.nil? || budget == 0
     
-    average_spend = average_weekly_spending(in_asset_type)
-    
-    twb -= (average_spend - budget) ** 1.3 if average_spend > twb
+    twb -= (average_spend - twb) ** 1.3 if average_weekly_spending(in_asset_type) > twb
     
     twb.round(self.asset_type.precision)
   end
