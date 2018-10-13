@@ -221,15 +221,16 @@ class User < ApplicationRecord
     end
   end
 
-  def calculate_tax(gross_income)
+  def calculate_tax(gross_income, div_cap_gains)
     tax = 0
-    excluded = 0
+    excluded = div_cap_gains
     tax_brackets.each_with_index do |bracket,i|
       applicable = [bracket[1],gross_income].min - excluded
       tax += applicable * bracket[0]
       excluded += applicable
     end
-    tax
+    
+    tax + [[gross_income - tax_brackets[3][1], 0].max, div_cap_gains].min * .15
   end
     
   def forecast_register

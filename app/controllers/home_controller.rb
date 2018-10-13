@@ -26,6 +26,8 @@ class HomeController < ApplicationController
     
     @taxable_amounts = Hash.new
     @taxable_income = 0
+    @dividend_income = 0
+    @lt_capital_gain_income = 0
     @deductions = 0
     taxable_ledger_entries.each do |le|
       amount = le.amount_in(current_user.home_asset_type) 
@@ -36,6 +38,8 @@ class HomeController < ApplicationController
       
       if :income == account_type
         @taxable_income -= amount
+        @dividend_income += amount if le.account.name == "Dividends"
+        @lt_capital_gain_income += amount if le.account.name == "Long-Term Capital Gains"
       else
         @deductions += amount
       end
@@ -49,7 +53,9 @@ class HomeController < ApplicationController
     
     @projected_taxable = (@taxable_income - @deductions) / @year_progress
     
-    @projected_tax = current_user.calculate_tax(@projected_taxable)
+    @projected_div_cap_gains = @lt_capital_gain_income + @dividend_income / @year_progress
+    
+    @projected_tax = current_user.calculate_tax(@projected_taxable, @div_cap_gains)
     
     @taxes_witheld = LedgerEntry.joins(:account)
       .where("accounts.name in ('State Taxes','Federal Taxes')")
