@@ -38,8 +38,8 @@ class HomeController < ApplicationController
       
       if :income == account_type
         @taxable_income -= amount
-        @dividend_income += amount if le.account.name == "Dividends"
-        @lt_capital_gain_income += amount if le.account.name == "Long-Term Capital Gains"
+        @dividend_income -= amount if le.account.name == "Dividends"
+        @lt_capital_gain_income -= amount if le.account.name == "Long-Term Capital Gains"
       else
         @deductions += amount
       end

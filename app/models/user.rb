@@ -230,7 +230,7 @@ class User < ApplicationRecord
       excluded += applicable
     end
     
-    tax + [[gross_income - tax_brackets[3][1], 0].max, div_cap_gains].min * 0.15
+    tax + [[gross_income - tax_brackets[3][1], 0].max, [0,div_cap_gains].max].min * 0.15
   end
     
   def forecast_register
