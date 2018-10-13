@@ -55,7 +55,7 @@ class HomeController < ApplicationController
     
     @projected_div_cap_gains = @lt_capital_gain_income + @dividend_income / @year_progress
     
-    @projected_tax = current_user.calculate_tax(@projected_taxable, @div_cap_gains)
+    @projected_tax = current_user.calculate_tax(@projected_taxable, @projected_div_cap_gains)
     
     @taxes_witheld = LedgerEntry.joins(:account)
       .where("accounts.name in ('State Taxes','Federal Taxes')")

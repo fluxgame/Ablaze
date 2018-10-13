@@ -1,6 +1,7 @@
 <p>Income: <%= current_user.home_asset_type.to_currency(@taxable_income) %></p>
 <p>Deductions: <%= current_user.home_asset_type.to_currency(@deductions) %></p>
 <p>Projected Taxable Income: <%= current_user.home_asset_type.to_currency(@projected_taxable) %></p>
+<p>Projected Dividends & Long-Term Capital Gains: <%= current_user.home_asset_type.to_currency(@projected_div_cap_gains)%>
 <p>Target Taxable Income: <%= current_user.home_asset_type.to_currency(16460 * 3)%></p>
 <p>Current Difference from Target: <%= current_user.home_asset_type.to_currency(@taxable_income - @deductions - 16460 * 3) %></p>
 <p>Projected Difference from Target: <%= current_user.home_asset_type.to_currency(@projected_taxable - 16460 * 3) %></p>
