@@ -203,17 +203,25 @@ class User < ApplicationRecord
     }
   end
   
-  def tax_brackets
-    [[0,8800],[0.051,24000],[0.151,43050],[0.171,101400],[0.271,189000],[0.2951,339000],[0.3751,424000],[0.3951,624000],[0.4251,624000]]
+  def combined_tax_brackets
+    [[0,8800],[0.051,24000],[0.151,43050],[0.171,101400],[0.271,189000],[0.291,339000],[0.371,424000],[0.401,624000],[0.421,624000]]
   end
+  
+  def federal_tax_brackets
+    [[0,24000],[0.1,43050],[0.12,101400],[0.22,189000],[0.24,339000],[0.32,424000],[0.35,624000],[0.37,624000]]
+  end
+
+  def state_tax_brackets
+    [[0,8800],[0.051,8800]]
+  end  
   
   def adjust_for_taxes(annual_spending)
     last_bracket_max = 0
     last_bracket = 0
-    tax_brackets.each_with_index do |bracket,i|
+    combined_tax_brackets.each_with_index do |bracket,i|
       bracket_max = last_bracket_max + (1 - bracket[0]) * (bracket[1] - last_bracket)
       puts bracket_max
-      if annual_spending <= bracket_max || i == tax_brackets.size - 1
+      if annual_spending <= bracket_max || i == combined_tax_brackets.size - 1
         return last_bracket + (annual_spending - last_bracket_max) / (1 - bracket[0])
       end
       last_bracket_max = bracket_max
@@ -222,15 +230,18 @@ class User < ApplicationRecord
   end
 
   def calculate_tax(gross_income, div_cap_gains)
+    walk_brackets(federal_tax_brackets, gross_income - div_cap_gains) + walk_brackets(state_tax_brackets,gross_income) + [[gross_income - tax_brackets[3][1], 0].max, [0,div_cap_gains].max].min * 0.15
+  end
+    
+  def walk_brackets(brackets, taxable_amount)
     tax = 0
-    excluded = div_cap_gains
-    tax_brackets.each_with_index do |bracket,i|
-      applicable = [bracket[1],gross_income].min - excluded
+    excluded = 0
+    brackets.each_with_index do |bracket,i|
+      applicable = [bracket[1],taxable_amount].min - excluded
       tax += applicable * bracket[0]
       excluded += applicable
     end
-    
-    tax + [[gross_income - tax_brackets[3][1], 0].max, [0,div_cap_gains].max].min * 0.15
+    tax
   end
     
   def forecast_register
