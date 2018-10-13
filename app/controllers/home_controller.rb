@@ -48,5 +48,12 @@ class HomeController < ApplicationController
     end
     
     @projected_taxable = (@taxable_income - @deductions) / @year_progress
+    
+    @projected_tax = current_user.calculate_tax(@projected_taxable)
+    
+    @taxes_witheld = LedgerEntry.joins(:account)
+      .where("accounts.name in ('State Taxes','Federal Taxes')")
+      .where('date >= ? and date <= ?', start_date, end_date)
+      .sum(:credit)
   end
 end
