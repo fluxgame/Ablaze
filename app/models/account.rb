@@ -97,7 +97,7 @@ class Account < ApplicationRecord
     this_weeks_budget = [0,self.this_weeks_budget(in_asset_type)].max
     average_weekly_spending = [0,(this_weeks_budget + self.balance_as_of(last_saturday)) / yot / (365.25 / 7)].max
 
-    return (budget - average_weekly_spending) * (365.25 / 7) - self.budgeted_amount - self.budgeted_spending_this_week(in_asset_type)
+    return ((budget - average_weekly_spending) * (365.25 / 7) - self.budgeted_amount - self.budgeted_spending_this_week(in_asset_type)).round(self.asset_type.precision)
   end
   
   def unplanned_spending_this_week(in_asset_type = self.asset_type)
