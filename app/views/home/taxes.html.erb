@@ -6,7 +6,7 @@
 <p>Projected Difference from Target: <%= current_user.home_asset_type.to_currency(@projected_taxable - 16460 * 3) %></p>
 <p>Projected Tax: <%= current_user.home_asset_type.to_currency(@projected_tax) %></p>
 <p>Taxes Witheld: <%= current_user.home_asset_type.to_currency(@taxes_witheld) %></p>
-<p>Projected Taxes Owed: <%= current_user.home_asset_type.to_currency(@taxes_witheld - @projected_tax) %></p>
+<p>Projected Taxes Owed: <%= current_user.home_asset_type.to_currency(@projected_tax - @taxes_witheld) %></p>
 <% @taxable_amounts.each do |account,amount| %>
 <p><%= account %>: <%= current_user.home_asset_type.to_currency(amount) %></p>
 <% end %>
