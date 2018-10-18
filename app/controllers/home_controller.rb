@@ -60,6 +60,6 @@ class HomeController < ApplicationController
     @taxes_witheld = LedgerEntry.joins(:account)
       .where("accounts.name in ('State Taxes','Federal Taxes')")
       .where('date >= ? and date <= ?', start_date, end_date)
-      .sum(:credit)
+      .sum(:debit)
   end
 end
