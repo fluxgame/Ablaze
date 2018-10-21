@@ -151,6 +151,7 @@ class User < ApplicationRecord
   end  
     
   def aggregate_amounts(on_date = Date.today)
+    on_date = on_date.beginning_of_week(:sunday) - 1
     Rails.cache.fetch("#{cache_key}/aggregate_amounts/"+on_date.to_s, expires_in: 15.minutes) {
       am = {
         post_fi_expenses: 0.0,

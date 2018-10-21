@@ -86,46 +86,46 @@ class Account < ApplicationRecord
     nil
   end
   
-  def available_to_budget(in_asset_type = self.asset_type)
+  def available_to_budget(in_asset_type = self.asset_type, on_date = Date.today)
     budget = self.asset_type.exchange(self.fi_budget, in_asset_type)
     
     return nil if budget.nil? || budget == 0
     
-    last_saturday = Date.today.beginning_of_week(:sunday) - 1
+    last_saturday = on_date.beginning_of_week(:sunday) - 1
     yot = self.years_of_transactions(last_saturday + 1.week)
     return 0 if yot <= 0
-    this_weeks_budget = [0,self.this_weeks_budget(in_asset_type)].max
+    this_weeks_budget = [0,self.this_weeks_budget(in_asset_type, on_date)].max
     average_weekly_spending = [0,(this_weeks_budget + self.balance_as_of(last_saturday)) / yot / (365.25 / 7)].max
 
-    return ((budget - average_weekly_spending) * (365.25 / 7) - self.budgeted_amount - self.budgeted_spending_this_week(in_asset_type)).round(self.asset_type.precision)
+    return ((budget - average_weekly_spending) * (365.25 / 7) - self.budgeted_amount - self.budgeted_spending_this_week(in_asset_type, on_date)).round(self.asset_type.precision)
   end
   
-  def unplanned_spending_this_week(in_asset_type = self.asset_type)
-    last_sunday = Date.today.beginning_of_week(:sunday)
-    next_sunday = Date.today.next_occurring(:sunday)
+  def unplanned_spending_this_week(in_asset_type = self.asset_type, on_date = Date.today)
+    last_sunday = on_date.beginning_of_week(:sunday)
+    next_sunday = on_date.next_occurring(:sunday)
     LedgerEntry.joins(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, budget_goal_id: nil, account_id: self.id).where('date >= ? and date < ?',last_sunday, next_sunday).sum(:debit)
   end
   
   def budgeted_spending_this_week(in_asset_type = self.asset_type)
-    last_sunday = Date.today.beginning_of_week(:sunday)
-    next_sunday = Date.today.next_occurring(:sunday)
+    last_sunday = on_date.beginning_of_week(:sunday)
+    next_sunday = on_date.next_occurring(:sunday)
     LedgerEntry.where.not(budget_goal_id: nil).where(account_id: self.id).where('date >= ? and date < ?',last_sunday, next_sunday).sum(:debit)
   end  
   
-  def this_weeks_budget(in_asset_type = self.asset_type)
+  def this_weeks_budget(in_asset_type = self.asset_type, on_date = Date.today)
     twb = self.asset_type.exchange(self.fi_budget, in_asset_type)
     
     return 0 if twb.nil? || twb == 0
     
-    average_spend = average_weekly_spending(in_asset_type)
+    average_spend = average_weekly_spending(in_asset_type, on_date)
     
     twb -= (average_spend - twb) ** 1.3 if average_spend > twb
     
     twb.round(self.asset_type.precision)
   end
   
-  def available_to_spend(in_asset_type = self.asset_type)
-    self.this_weeks_budget(in_asset_type) - unplanned_spending_this_week(in_asset_type)
+  def available_to_spend(in_asset_type = self.asset_type, on_date = Date.today)
+    self.this_weeks_budget(in_asset_type, on_date) - unplanned_spending_this_week(in_asset_type, on_date)
   end
   
   def budgeted_amount
