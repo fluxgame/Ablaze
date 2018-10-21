@@ -105,10 +105,10 @@ class User < ApplicationRecord
     0.0322
   end
   
-  def fi_target(annual_spending = self.aggregate_amounts[:post_fi_expenses], 
+  def fi_target(on_date, annual_spending = self.aggregate_amounts[:post_fi_expenses], 
     rate_of_return = self.aggregate_amounts[:average_rate_of_return])
     
-    Exonio.pv((1+rate_of_return)/(1+inflation_rate)-1, (death_date - Date.today)/365.25, annual_spending * -1, 0)
+    Exonio.pv((1+rate_of_return)/(1+inflation_rate)-1, (death_date - on_date)/365.25, annual_spending * -1, 0)
 #    annual_spending / self.withdrawal_rate
   end
   
@@ -129,14 +129,15 @@ class User < ApplicationRecord
     return first_transaction.date if first_transaction.present?
   end
     
-  def fi_date(annual_spending = self.aggregate_amounts[:post_fi_expenses],
+  def fi_date(on_date = Date.today.beginning_of_week(:sunday) - 1,
+    annual_spending = self.aggregate_amounts[:post_fi_expenses],
     net_worth = self.aggregate_amounts[:net_worth],
     annual_savings = self.aggregate_amounts[:savings],
     rate_of_return = self.aggregate_amounts[:average_rate_of_return])
     
     ytfi = self.years_to_fi(annual_spending, net_worth, annual_savings, rate_of_return)
     return nil if ytfi.nil? || ytfi == "NaN"
-    date = Date.today
+    date = on_date
     date += ytfi.floor.years
     ytfi = (ytfi - ytfi.floor) * 365.25    
     date += ytfi.floor.days    
@@ -150,7 +151,7 @@ class User < ApplicationRecord
     }
   end  
     
-  def aggregate_amounts(on_date = Date.today)
+  def aggregate_amounts(on_date = Date.today.beginning_of_week(:sunday) - 1)
     on_date = on_date.beginning_of_week(:sunday) - 1
     Rails.cache.fetch("#{cache_key}/aggregate_amounts/"+on_date.to_s, expires_in: 15.minutes) {
       am = {
