@@ -105,7 +105,7 @@ class User < ApplicationRecord
     0.0322
   end
   
-  def fi_target(on_date = Date.today.beginning_of_week(:sunday) - 1, 
+  def fi_target(on_date = Date.today, 
     annual_spending = self.aggregate_amounts[:post_fi_expenses], 
     rate_of_return = self.aggregate_amounts[:average_rate_of_return])
     
@@ -113,7 +113,7 @@ class User < ApplicationRecord
 #    annual_spending / self.withdrawal_rate
   end
   
-  def years_to_fi(on_date = Date.today.beginning_of_week(:sunday) - 1,
+  def years_to_fi(on_date = Date.today,
     annual_spending = self.aggregate_amounts[:post_fi_expenses],
     net_worth = self.aggregate_amounts[:net_worth],
     annual_savings = self.aggregate_amounts[:savings],
@@ -131,7 +131,7 @@ class User < ApplicationRecord
     return first_transaction.date if first_transaction.present?
   end
     
-  def fi_date(on_date = Date.today.beginning_of_week(:sunday) - 1,
+  def fi_date(on_date = Date.today,
     annual_spending = self.aggregate_amounts[:post_fi_expenses],
     net_worth = self.aggregate_amounts[:net_worth],
     annual_savings = self.aggregate_amounts[:savings],
@@ -177,14 +177,14 @@ class User < ApplicationRecord
           account_type = account.account_type.master_account_type.to_sym
 
           if account_type == :expense
-            avg_annual_spend = account.average_weekly_spending(self.home_asset_type, on_date) * (365.25 / 7)
+            avg_annual_spend = account.balance_as_of(on_date, self.home_asset_type) / account.years_of_transactions
             annual_fi_budget = account.fi_budget * (365.25 / 7)
             am[:savings] -= avg_annual_spend
             am[:expenses] += avg_annual_spend
             am[:post_fi_expenses_pre_tax] += [avg_annual_spend, annual_fi_budget].max if account.post_fi_expense?
             am[:lean_fi_expenses_pre_tax] += [avg_annual_spend, annual_fi_budget].max if account.lean_fi_expense?
           elsif account.name == "Active Income"
-            avg_annual_spend = account.average_weekly_spending(self.home_asset_type, on_date) * (365.25 / 7)
+            avg_annual_spend = account.balance_as_of(on_date, self.home_asset_type) / account.years_of_transactions
             am[:savings] -= avg_annual_spend
             am[:active_income] -= avg_annual_spend
           elsif [:asset, :liability].include?(account_type)
