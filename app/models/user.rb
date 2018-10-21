@@ -105,20 +105,22 @@ class User < ApplicationRecord
     0.0322
   end
   
-  def fi_target(on_date, annual_spending = self.aggregate_amounts[:post_fi_expenses], 
+  def fi_target(on_date = Date.today.beginning_of_week(:sunday) - 1, 
+    annual_spending = self.aggregate_amounts[:post_fi_expenses], 
     rate_of_return = self.aggregate_amounts[:average_rate_of_return])
     
     Exonio.pv((1+rate_of_return)/(1+inflation_rate)-1, (death_date - on_date)/365.25, annual_spending * -1, 0)
 #    annual_spending / self.withdrawal_rate
   end
   
-  def years_to_fi(annual_spending = self.aggregate_amounts[:post_fi_expenses],
+  def years_to_fi(on_date = Date.today.beginning_of_week(:sunday) - 1,
+    annual_spending = self.aggregate_amounts[:post_fi_expenses],
     net_worth = self.aggregate_amounts[:net_worth],
     annual_savings = self.aggregate_amounts[:savings],
     rate_of_return = self.aggregate_amounts[:average_rate_of_return])
     
     begin
-      Exonio.nper(rate_of_return, annual_savings * -1, net_worth * -1, self.fi_target(annual_spending))
+      Exonio.nper(rate_of_return, annual_savings * -1, net_worth * -1, self.fi_target(on_date, annual_spending))
     rescue
       nil
     end
