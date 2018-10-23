@@ -106,7 +106,7 @@ class Account < ApplicationRecord
     LedgerEntry.joins(:parent_transaction).where(transactions: {prototype_transaction_id: nil}, budget_goal_id: nil, account_id: self.id).where('date >= ? and date < ?',last_sunday, next_sunday).sum(:debit)
   end
   
-  def budgeted_spending_this_week(in_asset_type = self.asset_type)
+  def budgeted_spending_this_week(in_asset_type = self.asset_type, on_date = Date.today)
     last_sunday = on_date.beginning_of_week(:sunday)
     next_sunday = on_date.next_occurring(:sunday)
     LedgerEntry.where.not(budget_goal_id: nil).where(account_id: self.id).where('date >= ? and date < ?',last_sunday, next_sunday).sum(:debit)
