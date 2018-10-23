@@ -4,7 +4,6 @@
 	points: false,
 	min: 0,
 	library: { scales: { yAxes: [{ gridLines: { display: true }, ticks: { maxTicksLimit: 10 } }]}} %>
-#	max: current_user.fi_target.round(current_user.home_asset_type.precision) %>
 <h1>Spending and Saving</h1>
 <%= line_chart [{ name: "Annual Spending", 
 		data: ReportDatum.where(user_id: current_user.id).group(:date).sum(:annual_post_fi_spending) },
@@ -19,14 +18,7 @@
 	points: false,
 	min: 0,
 	library: { 
-		vAxes: { 
-			0 => {logScale: false}, 
-			1 => {logScale: false} 
-			}, 
 		series: { 
-			0 => {targetAxisIndex: 0}, 
-			1 => {targetAxisIndex: 0}, 
-			2 => {targetAxisIndex: 1},
-			3 => {targetAxisIndex: 1} 
-			}
+			0 => {targetAxisIndex: 0}
+		}
 		} %>
