@@ -142,7 +142,7 @@ class User < ApplicationRecord
     rate_of_return = self.aggregate_amounts[:average_rate_of_return])
     
     ytfi = self.years_to_fi(on_date, annual_spending, net_worth, annual_savings, rate_of_return)
-    return nil if ytfi.nil? || ytfi == "NaN"
+    return nil if ytfi.nil? || ytfi == "NaN" || ytfi == -Float::INFINITY
     date = on_date
     date += ytfi.floor.years
     ytfi = (ytfi - ytfi.floor) * 365.25    
