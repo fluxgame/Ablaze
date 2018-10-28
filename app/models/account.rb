@@ -93,8 +93,8 @@ class Account < ApplicationRecord
     
     last_saturday = on_date.beginning_of_week(:sunday) - 1
     
-    atb = (budget * self.years_of_transactions(last_saturday) * (365.25 / 7))
-    atb -= self.balance_as_of(last_saturday)) 
+    atb = budget * self.years_of_transactions(last_saturday) * (365.25 / 7)
+    atb -= self.balance_as_of(last_saturday)
     atb -= budget + self.budgeted_amount + self.budgeted_spending_this_week(in_asset_type, on_date)
 
     atb.round(self.asset_type.precision)
