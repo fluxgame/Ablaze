@@ -91,13 +91,14 @@ class Account < ApplicationRecord
     
     return nil if budget.nil? || budget == 0
     
-    last_saturday = on_date.beginning_of_week(:sunday) - 1
-    yot = self.years_of_transactions(last_saturday + 1.week)
-    return 0 if yot <= 0
-    this_weeks_budget = [0,self.this_weeks_budget(in_asset_type, on_date)].max
-    average_weekly_spending = [0,(this_weeks_budget + self.balance_as_of(last_saturday)) / yot / (365.25 / 7)].max
+#    last_saturday = on_date.beginning_of_week(:sunday) - 1
+#    yot = self.years_of_transactions(last_saturday + 1.week)
+#    return 0 if yot <= 0
+#    this_weeks_budget = [0,self.this_weeks_budget(in_asset_type, on_date)].max
+#    average_weekly_spending = [0,(this_weeks_budget + self.balance_as_of(last_saturday)) / yot / (365.25 / 7)].max
+    aws = self.average_weekly_spending(in_asset_type, on_date)
 
-    return ((budget - average_weekly_spending) * (365.25 / 7) - self.budgeted_amount - self.budgeted_spending_this_week(in_asset_type, on_date)).round(self.asset_type.precision)
+    return ((budget - aws) * (365.25 / 7) - budget - self.budgeted_amount - self.budgeted_spending_this_week(in_asset_type, on_date)).round(self.asset_type.precision)
   end
   
   def unplanned_spending_this_week(in_asset_type = self.asset_type, on_date = Date.today)
