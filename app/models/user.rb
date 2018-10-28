@@ -180,7 +180,7 @@ class User < ApplicationRecord
           account_type = account.account_type.master_account_type.to_sym
 
           if account_type == :expense
-            avg_annual_spend = account.balance_as_of(on_date, self.home_asset_type) / account.years_of_transactions
+            avg_annual_spend = account.balance_as_of(on_date, self.home_asset_type) / account.years_of_transactions(on_date)
             annual_fi_budget = account.fi_budget * (365.25 / 7)
             am[:savings] -= avg_annual_spend
             am[:expenses] += avg_annual_spend
