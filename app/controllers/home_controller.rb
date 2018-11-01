@@ -55,7 +55,7 @@ class HomeController < ApplicationController
     @projected_state_tax = current_user.calculate_state_tax(@projected_taxable, @projected_div_cap_gains)
     @projected_tax = @projected_fed_tax + @projected_state_tax
     
-    @fed_taxes_witheld = Account.where(name: "Federal Tax").first.balance_as_of([end_date, Date.today].max)
-    @state_taxes_witheld = Account.where(name: "State Tax").first.balance_as_of([end_date, Date.today].max)
+    @fed_taxes_witheld = Account.where(name: "Federal Tax").first.balance_as_of([end_date, Date.today].min)
+    @state_taxes_witheld = Account.where(name: "State Tax").first.balance_as_of([end_date, Date.today].min)
   end
 end
