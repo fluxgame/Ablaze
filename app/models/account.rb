@@ -145,7 +145,7 @@ class Account < ApplicationRecord
   end
   
   def post_fi_expense?
-    !['Interest Expense','State Taxes','Federal Taxes','Payroll Taxes'].include?(name) && self.account_type.master_account_type.to_sym == :expense
+    !['Interest Expense','Income Tax','Payroll Taxes'].include?(name) && self.account_type.master_account_type.to_sym == :expense
   end
   
   def lean_fi_expense?
