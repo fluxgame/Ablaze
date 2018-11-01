@@ -237,7 +237,15 @@ class User < ApplicationRecord
   end
 
   def calculate_tax(gross_income, div_cap_gains)
-    walk_brackets(federal_tax_brackets, gross_income - div_cap_gains) + walk_brackets(state_tax_brackets,gross_income) + [[gross_income - federal_tax_brackets[2][1], 0].max, [0,div_cap_gains].max].min * 0.15
+    calculate_fed_tax(gross_income, div_cap_gains) + calculate_state_tax(gross_income, div_cap_gains)
+  end
+  
+  def calculate_fed_tax(gross_income, div_cap_gains)
+    walk_brackets(federal_tax_brackets, gross_income - div_cap_gains) + [[gross_income - federal_tax_brackets[2][1], 0].max, [0,div_cap_gains].max].min * 0.15
+  end
+
+  def calculate_state_tax(gross_income, div_cap_gains)
+    walk_brackets(state_tax_brackets, gross_income)
   end
     
   def walk_brackets(brackets, taxable_amount)

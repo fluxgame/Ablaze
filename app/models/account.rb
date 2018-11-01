@@ -149,7 +149,7 @@ class Account < ApplicationRecord
   end
   
   def lean_fi_expense?
-    ['Food','Transportation','Housing','Health','Pets'].include?(name) 
+    ['Food','Transportation','Housing','Health','Pets'].include?(name)
   end
   
   def expected_annual_return

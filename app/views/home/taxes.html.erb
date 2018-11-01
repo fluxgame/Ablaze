@@ -5,9 +5,14 @@
 <p>Target Taxable Income: <%= current_user.home_asset_type.to_currency(16240 * 3)%></p>
 <p>Current Difference from Target: <%= current_user.home_asset_type.to_currency(@taxable_income - @deductions - 16240 * 3) %></p>
 <p>Projected Difference from Target: <%= current_user.home_asset_type.to_currency(@projected_taxable - 16240 * 3) %></p>
-<p>Projected Tax: <%= current_user.home_asset_type.to_currency(@projected_tax) %></p>
-<p>Taxes Witheld: <%= current_user.home_asset_type.to_currency(@taxes_witheld) %></p>
-<p>Projected Taxes Owed: <%= current_user.home_asset_type.to_currency(@projected_tax - @taxes_witheld) %></p>
+<h2>Federal Taxes</h2>
+<p>Projected Tax: <%= current_user.home_asset_type.to_currency(@projected_fed_tax) %></p>
+<p>Taxes Witheld: <%= current_user.home_asset_type.to_currency(@fed_taxes_witheld) %></p>
+<p>Projected Taxes Owed: <%= current_user.home_asset_type.to_currency(@projected_fed_tax - @fed_taxes_witheld) %></p>
+<h2>State Taxes</h2>
+<p>Projected Tax: <%= current_user.home_asset_type.to_currency(@projected_state_tax) %></p>
+<p>Taxes Witheld: <%= current_user.home_asset_type.to_currency(@state_taxes_witheld) %></p>
+<p>Projected Taxes Owed: <%= current_user.home_asset_type.to_currency(@projected_state_tax - @state_taxes_witheld) %></p>
 <% @taxable_amounts.each do |account,amount| %>
 <p><%= account %>: <%= current_user.home_asset_type.to_currency(amount) %></p>
 <% end %>
