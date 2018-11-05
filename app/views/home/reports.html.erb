@@ -5,9 +5,9 @@
 	library: { scales: { yAxes: [{ gridLines: { display: true }, ticks: { maxTicksLimit: 10 } }]}} %>
 <h1>Spending and Saving</h1>
 <%= line_chart [{ name: "Annual Spending", 
-		data: ReportDatum.where(user_id: current_user.id).group(:date).sum(:annual_post_fi_spending) },
+		data: ReportDatum.where(user_id: current_user.id).where('date >= ?', '2018-01-01').group(:date).sum(:annual_post_fi_spending) },
 				{ name: "Annual Saving", 
-		data: ReportDatum.where(user_id: current_user.id).group(:date).sum(:annual_savings) }],
+		data: ReportDatum.where(user_id: current_user.id).where('date >= ?', '2018-01-01').group(:date).sum(:annual_savings) }],
 		prefix: current_user.home_asset_type.currency_symbol, 
 		points: false, 
 		min: 0, 
