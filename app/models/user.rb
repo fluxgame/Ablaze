@@ -175,28 +175,30 @@ class User < ApplicationRecord
       }
       
       self.accounts.each do |account|
-        years_of_transactions = account.years_of_transactions(on_date)
-        if years_of_transactions > 0
-          account_type = account.account_type.master_account_type.to_sym
+        account_type = account.account_type.master_account_type.to_sym
 
-          if account_type == :expense
-            avg_annual_spend = account.balance_as_of(on_date, self.home_asset_type) / account.years_of_transactions(on_date)
-            annual_fi_budget = account.fi_budget * (365.25 / 7)
-            am[:savings] -= avg_annual_spend
-            am[:expenses] += avg_annual_spend
-            am[:post_fi_expenses_pre_tax] += [avg_annual_spend, annual_fi_budget].max if account.post_fi_expense?
-            am[:lean_fi_expenses_pre_tax] += [avg_annual_spend, annual_fi_budget].max if account.lean_fi_expense?
-          elsif account.name == "Active Income"
-            avg_annual_spend = account.balance_as_of(on_date, self.home_asset_type) / account.years_of_transactions
-            am[:savings] -= avg_annual_spend
-            am[:active_income] -= avg_annual_spend
-          elsif [:asset, :liability].include?(account_type)
-            account_balance = account.balance_as_of(on_date, self.home_asset_type)
-            if account_balance.present?
-              am[:average_rate_of_return] += (account.expected_annual_return * account_balance)
-              am[:assets] += account_balance if account_type == :asset
-              am[:liabilities] += account_balance if account_type == :liability
-              am[:current_spending_balance] += account_balance if account.spending_account?
+        if [:asset, :liability].include?(account_type)
+          account_balance = account.balance_as_of(on_date, self.home_asset_type)
+          if account_balance.present?
+            am[:average_rate_of_return] += (account.expected_annual_return * account_balance)
+            am[:assets] += account_balance if account_type == :asset
+            am[:liabilities] += account_balance if account_type == :liability
+            am[:current_spending_balance] += account_balance if account.spending_account?
+          end
+        else  
+          years_of_transactions = account.years_of_transactions(on_date)
+          if years_of_transactions > 0            
+            if account_type == :expense
+              avg_annual_spend = account.balance_as_of(on_date, self.home_asset_type) / years_of_transactions
+              annual_fi_budget = account.fi_budget * (365.25 / 7)
+              am[:savings] -= avg_annual_spend
+              am[:expenses] += avg_annual_spend
+              am[:post_fi_expenses_pre_tax] += [avg_annual_spend, annual_fi_budget].max if account.post_fi_expense?
+              am[:lean_fi_expenses_pre_tax] += [avg_annual_spend, annual_fi_budget].max if account.lean_fi_expense?
+            elsif account.name == "Active Income"
+              avg_annual_spend = account.balance_as_of(on_date, self.home_asset_type) / years_of_transactions
+              am[:savings] -= avg_annual_spend
+              am[:active_income] -= avg_annual_spend
             end
           end
         end
