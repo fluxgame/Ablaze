@@ -6,8 +6,6 @@ class BudgetGoal < ApplicationRecord
   before_save :calculate_budgeted_amount
   
   def calculate_budgeted_amount
-    puts "Remaining Amount: " + remaining_amount.to_s
-    puts "Amount Spent: " + amount_spent.to_s
     self.budgeted_amount = remaining_amount + amount_spent
   end
   

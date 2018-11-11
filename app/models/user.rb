@@ -34,6 +34,8 @@ class User < ApplicationRecord
     
     ReportDatum.where(user_id: self.id)
   end
+  
+  ReportDatum.create! user_id: u.id, date: date, average_rate_of_return: am[:average_rate_of_return], annual_savings: am[:savings],net_worth: am[:net_worth],annual_post_fi_spending: am[:post_fi_expenses] 
 
   def mobile_expense_accounts
     Rails.cache.fetch("#{cache_key}/mobile_expense_accounts", expires_in: 15.minutes) {
@@ -173,7 +175,7 @@ class User < ApplicationRecord
         net_worth: 0.0,
         current_spending_balance: 0
       }
-      
+
       self.accounts.each do |account|
         account_type = account.account_type.master_account_type.to_sym
 
@@ -229,7 +231,6 @@ class User < ApplicationRecord
     last_bracket = 0
     combined_tax_brackets.each_with_index do |bracket,i|
       bracket_max = last_bracket_max + (1 - bracket[0]) * (bracket[1] - last_bracket)
-      puts bracket_max
       if annual_spending <= bracket_max || i == combined_tax_brackets.size - 1
         return last_bracket + (annual_spending - last_bracket_max) / (1 - bracket[0])
       end
@@ -307,4 +308,21 @@ class User < ApplicationRecord
     
     register.sort_by { |key, v| v[:running_total] }.to_h
   end    
+end
+
+networth1 = networth2 = 0
+u = User.find(1)
+u.accounts.each do |account|
+account_type = account.account_type.master_account_type.to_sym
+
+if [:asset, :liability].include?(account_type)
+ 
+ puts account.name
+ balance = account.balance_as_of(Date.parse('2018-01-09'), u.home_asset_type)
+ networth1 += balance
+ puts balance
+ balance = account.balance_as_of(Date.parse('2018-01-10'), u.home_asset_type)
+ networth2 += balance
+ puts balance
+end
 end
