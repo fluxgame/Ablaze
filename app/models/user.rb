@@ -35,8 +35,6 @@ class User < ApplicationRecord
     ReportDatum.where(user_id: self.id)
   end
   
-  ReportDatum.create! user_id: u.id, date: date, average_rate_of_return: am[:average_rate_of_return], annual_savings: am[:savings],net_worth: am[:net_worth],annual_post_fi_spending: am[:post_fi_expenses] 
-
   def mobile_expense_accounts
     Rails.cache.fetch("#{cache_key}/mobile_expense_accounts", expires_in: 15.minutes) {
       Account.left_joins(:ledger_entries).group(:id).order('count(ledger_entries.id) desc').where(user_id: self.id, mobile: true).joins(:account_type).where(account_types: {master_account_type: :expense})
