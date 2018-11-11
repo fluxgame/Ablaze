@@ -126,7 +126,10 @@ class Account < ApplicationRecord
   
   def available_to_spend(in_asset_type = self.asset_type, on_date = Date.today)
     ats = self.this_weeks_budget(in_asset_type, on_date) - unplanned_spending_this_week(in_asset_type, on_date)
-    ats += available_to_budget(in_asset_type, on_date) if self.budget_goals.count == 0
+    if self.budget_goals.count == 0
+      atb = available_to_budget(in_asset_type, on_date)
+      ats += atb if atb.present?
+    end
   end
   
   def budgeted_amount
