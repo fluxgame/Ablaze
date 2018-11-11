@@ -130,6 +130,7 @@ class Account < ApplicationRecord
       atb = available_to_budget(in_asset_type, on_date)
       ats += atb if atb.present?
     end
+    ats
   end
   
   def budgeted_amount
