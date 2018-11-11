@@ -89,7 +89,7 @@ class Account < ApplicationRecord
   def available_to_budget(in_asset_type = self.asset_type, on_date = Date.today)
     budget = self.asset_type.exchange(self.fi_budget, in_asset_type)
     
-    return nil if budget.nil? || budget == 0
+    return nil if budget.nil? || budget == 0  
     
     last_saturday = on_date.beginning_of_week(:sunday) - 1
     
@@ -126,7 +126,7 @@ class Account < ApplicationRecord
   
   def available_to_spend(in_asset_type = self.asset_type, on_date = Date.today)
     ats = self.this_weeks_budget(in_asset_type, on_date) - unplanned_spending_this_week(in_asset_type, on_date)
-    ats += available_to_budget(in_asset_type, on_date) if self.budget_goals.count = 0
+    ats += available_to_budget(in_asset_type, on_date) if self.budget_goals.count == 0
   end
   
   def budgeted_amount
