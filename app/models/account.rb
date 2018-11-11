@@ -128,7 +128,7 @@ class Account < ApplicationRecord
     ats = self.this_weeks_budget(in_asset_type, on_date) - unplanned_spending_this_week(in_asset_type, on_date)
     if self.budget_goals.count == 0
       atb = available_to_budget(in_asset_type, on_date)
-      ats += atb if atb.present?
+      ats += atb if atb.present? && atb > 0
     end
     ats
   end
