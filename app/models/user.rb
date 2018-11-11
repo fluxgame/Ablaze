@@ -309,20 +309,3 @@ class User < ApplicationRecord
     register.sort_by { |key, v| v[:running_total] }.to_h
   end    
 end
-
-networth1 = networth2 = 0
-u = User.find(1)
-u.accounts.each do |account|
-account_type = account.account_type.master_account_type.to_sym
-
-if [:asset, :liability].include?(account_type)
- 
- puts account.name
- balance = account.balance_as_of(Date.parse('2018-01-09'), u.home_asset_type)
- networth1 += balance
- puts balance
- balance = account.balance_as_of(Date.parse('2018-01-10'), u.home_asset_type)
- networth2 += balance
- puts balance
-end
-end
