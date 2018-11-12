@@ -4,6 +4,7 @@ class LedgerEntriesController < ApplicationController
   def index
     @ledger_entries = LedgerEntry.all.order(date: :desc)
     @ledger_entries = @ledger_entries.where(account: params[:account]) if params[:account].present?
+    @ledger_entries = @ledger_entries.where(account_reconciliation_id: nil) if !params[:show_reconciled].present?
     @ledger_entries = @ledger_entries.where('date > ?', Date.today - params[:days].to_i.days) if params[:days].to_i > 0
   end
 
