@@ -80,7 +80,7 @@ class Transaction < ApplicationRecord
         
           self.active_ledger_entries.each do |le|
             newt.ledger_entries.push(LedgerEntry.new date: next_date, debit: le.debit, credit: le.credit, 
-                cleared: false, account_id: le.account_id, budget_goal_id: le.budget_goal_id)
+                cleared: false, tax_related: le.tax_related, account_id: le.account_id, budget_goal_id: le.budget_goal_id)
           end
           
           newt.save
