@@ -14,10 +14,15 @@ class User < ApplicationRecord
   def report_data
     last_data_archive = ReportDatum.where(user_id: self.id).order(date: :desc).first
     
+    first_transaction = Date.parse('2018-01-01')
     if last_data_archive.nil?
-      date = Date.parse('2018-01-01')
+      date = first_transaction
     else
-      date = last_data_archive.date + 1.day
+      if last_data_archive.date < first_transaction
+        date = first_transaction
+      else
+        date = last_data_archive.date + 1.day
+      end
     end
     
     while date < Date.today
@@ -205,8 +210,8 @@ class User < ApplicationRecord
       end
       
       health_insurance_cost = 126 * 12 * 2
-      am[:post_fi_expenses] += health_insurance_cost
-      am[:lean_fi_expenses] += health_insurance_cost
+      am[:post_fi_expenses_pre_tax] += health_insurance_cost
+      am[:post_fi_expenses_pre_tax] += health_insurance_cost
       
       am[:net_worth] = am[:assets] + am[:liabilities]
       am[:average_rate_of_return] /= am[:net_worth]
