@@ -203,7 +203,11 @@ class User < ApplicationRecord
           end
         end
       end
-           
+      
+      health_insurance_cost = 126 * 12 * 2
+      am[:post_fi_expenses] += health_insurance_cost
+      am[:lean_fi_expenses] += health_insurance_cost
+      
       am[:net_worth] = am[:assets] + am[:liabilities]
       am[:average_rate_of_return] /= am[:net_worth]
       am[:post_fi_expenses] = adjust_for_taxes(am[:post_fi_expenses_pre_tax])
