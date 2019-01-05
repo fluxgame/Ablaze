@@ -5,8 +5,6 @@
 		<tr>
 			<th>Expense</th>
 			<th>Budget</th>
-			<th>Years of<br/>Transactions</th>
-			<th>Unplanned<br/>Spending<br/>This Week</th>
 			<th>Average Weekly<br/>Spending</th>
 			<th>Available<br/>to Spend</th>
 			<th>Available<br/>to Budget</th>
@@ -17,8 +15,6 @@
 		<tr>
 			<td><%= a.name %></td>
 			<td><%= current_user.home_asset_type.to_currency(a.fi_budget) %></td>
-			<td><%= a.years_of_transactions %></td>
-			<td><%= current_user.home_asset_type.to_currency(a.unplanned_spending_this_week(current_user.home_asset_type)) %></td>
 			<td><%= current_user.home_asset_type.to_currency(a.average_weekly_spending(current_user.home_asset_type)) %></td>
 			<td><%= current_user.home_asset_type.to_currency(a.available_to_spend(current_user.home_asset_type)) %></td>
 			<td><%= current_user.home_asset_type.to_currency(a.available_to_budget(current_user.home_asset_type)) %></td>

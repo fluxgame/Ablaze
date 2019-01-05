@@ -77,16 +77,29 @@ class Account < ApplicationRecord
   
   def average_weekly_spending(in_asset_type = self.asset_type, on_date = Date.today)
     if [:expense, :income].include? self.account_type.master_account_type.to_sym
-      on_date = on_date.beginning_of_week(:sunday) - 1
+#      on_date = on_date.beginning_of_week(:sunday) - 1
       yot = self.years_of_transactions(on_date)
       return 0 if yot <= 0
-      return self.balance_as_of(on_date) / yot / (365.25 / 7)
+      return (self.balance_as_of(on_date, in_asset_type) / yot / (365.25 / 7)).round(in_asset_type.precision)
     end
     
     nil
   end
   
+  def weekly_budget(in_asset_type = self.asset_type)
+    budget = self.asset_type.exchange(self.fi_budget, in_asset_type)
+    budget = 0 if budget.nil?
+    budget
+  end
+  
+  def allowed_spending(in_asset_type = self.asset_type, on_date = Date.today)    
+    (self.weekly_budget(in_asset_type) * self.years_of_transactions(on_date) * (365.25 / 7)).round(in_asset_type.precision)
+  end
+
   def available_to_budget(in_asset_type = self.asset_type, on_date = Date.today)
+    allowed_spending(in_asset_type, on_date) - self.balance_as_of(on_date) - self.budgeted_amount
+    
+=begin
     budget = self.asset_type.exchange(self.fi_budget, in_asset_type)
     
     return nil if budget.nil? || budget == 0  
@@ -98,8 +111,31 @@ class Account < ApplicationRecord
     atb -= budget + self.budgeted_amount + self.budgeted_spending_this_week(in_asset_type, on_date)
 
     atb.round(self.asset_type.precision)
+=end
+  end
+
+  def available_to_spend(in_asset_type = self.asset_type, on_date = Date.today)
+    ats = available_to_budget(in_asset_type, on_date)
+    weekly_budget = self.weekly_budget(in_asset_type)
+
+    if ats < 0
+      average_spend = average_weekly_spending(in_asset_type, on_date)
+      ats = (weekly_budget - (average_spend - weekly_budget) ** 1.3).round(in_asset_type.precision)
+    end
+    
+    [ats,weekly_budget].min
+=begin
+    ats = self.this_weeks_budget(in_asset_type, on_date) - unplanned_spending_this_week(in_asset_type, on_date)
+    if self.budget_goals.count == 0
+      atb = available_to_budget(in_asset_type, on_date)
+      ats += atb if atb.present? && atb > 0
+    end
+    ats
+=end    
   end
   
+
+=begin
   def unplanned_spending_this_week(in_asset_type = self.asset_type, on_date = Date.today)
     last_sunday = on_date.beginning_of_week(:sunday)
     next_sunday = on_date.next_occurring(:sunday)
@@ -123,15 +159,7 @@ class Account < ApplicationRecord
     
     twb.round(self.asset_type.precision)
   end
-  
-  def available_to_spend(in_asset_type = self.asset_type, on_date = Date.today)
-    ats = self.this_weeks_budget(in_asset_type, on_date) - unplanned_spending_this_week(in_asset_type, on_date)
-    if self.budget_goals.count == 0
-      atb = available_to_budget(in_asset_type, on_date)
-      ats += atb if atb.present? && atb > 0
-    end
-    ats
-  end
+=end    
   
   def budgeted_amount
     amount = 0

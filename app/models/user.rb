@@ -268,7 +268,7 @@ class User < ApplicationRecord
     end
     tax
   end
-    
+        
   def forecast_register
     register = {}
     annual_spending = 0
