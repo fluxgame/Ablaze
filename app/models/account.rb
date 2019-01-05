@@ -126,7 +126,7 @@ class Account < ApplicationRecord
     ats = available_to_budget(in_asset_type, on_date) + weekly_budget
 
     if ats < 0
-      spent = self.balance_as_of(on_date, in_asset_type) + self.amount_budgeted
+      spent = self.balance_as_of(on_date, in_asset_type) + self.budgeted_amount
       average_spend = (spent / self.years_of_transactions(on_date) / (365.25 / 7)).round(in_asset_type.precision)
       if average_spend > weekly_budget
         ats = (weekly_budget - (average_spend - weekly_budget) ** 1.3).round(in_asset_type.precision) 
