@@ -115,15 +115,20 @@ class Account < ApplicationRecord
   end
 
   def available_to_spend(in_asset_type = self.asset_type, on_date = Date.today)
-    ats = available_to_budget(in_asset_type, on_date)
     weekly_budget = self.weekly_budget(in_asset_type)
+
+    return nil if weekly_budget == 0
+    
+    ats = available_to_budget(in_asset_type, on_date)
 
     if ats < 0
       average_spend = average_weekly_spending(in_asset_type, on_date)
       ats = (weekly_budget - (average_spend - weekly_budget) ** 1.3).round(in_asset_type.precision)
+    elsif ats > weekly_budget && self.budgeted_amount == 0
+      ats = weekly_budget
     end
     
-    [ats,weekly_budget].min
+    ats
 =begin
     ats = self.this_weeks_budget(in_asset_type, on_date) - unplanned_spending_this_week(in_asset_type, on_date)
     if self.budget_goals.count == 0
