@@ -97,8 +97,11 @@ class Account < ApplicationRecord
   end
 
   def available_to_budget(in_asset_type = self.asset_type, on_date = Date.today)
-    return nil if self.weekly_budget(in_asset_type) == 0
-    allowed_spending(in_asset_type, on_date) - self.balance_as_of(on_date) - self.budgeted_amount
+    weekly_budget = self.weekly_budget(in_asset_type)
+
+    return nil if weekly_budget == 0
+
+    allowed_spending(in_asset_type, on_date) - self.balance_as_of(on_date) - self.budgeted_amount - weekly_budget
     
 =begin
     budget = self.asset_type.exchange(self.fi_budget, in_asset_type)
@@ -120,11 +123,15 @@ class Account < ApplicationRecord
 
     return nil if weekly_budget == 0
     
-    ats = available_to_budget(in_asset_type, on_date)
+    ats = available_to_budget(in_asset_type, on_date) + weekly_budget
 
     if ats < 0
       average_spend = average_weekly_spending(in_asset_type, on_date)
-      ats = (weekly_budget - (average_spend - weekly_budget) ** 1.3).round(in_asset_type.precision)
+      if average_spend > weekly_budget
+        ats = (weekly_budget - (average_spend - weekly_budget) ** 1.3).round(in_asset_type.precision) 
+      else
+        ats = weekly_budget
+      end
     elsif ats > weekly_budget && self.budgeted_amount != 0
       ats = weekly_budget
     end
