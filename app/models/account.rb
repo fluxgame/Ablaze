@@ -97,7 +97,7 @@ class Account < ApplicationRecord
   end
 
   def available_to_budget(in_asset_type = self.asset_type, on_date = Date.today)
-    return nil if self.weekly_budget(in_asset_type).nil?
+    return nil if self.weekly_budget(in_asset_type) == 0
     allowed_spending(in_asset_type, on_date) - self.balance_as_of(on_date) - self.budgeted_amount
     
 =begin
