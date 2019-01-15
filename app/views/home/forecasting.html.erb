@@ -1,3 +1,7 @@
+<%
+	on_date = params[:date].present? ? Date.parse(params[:date]) : Date.today
+%>
+
 <table>
 	<thead>
 		<tr>
@@ -8,7 +12,7 @@
 		</tr>
 	</thead>
 	<tbody>
-		<% current_user.forecast_register.each do |date,line| %>
+		<% current_user.forecast_register(on_date).each do |date,line| %>
 		<tr>
 			<td><%= date %></td>
 			<td><%= current_user.home_asset_type.to_currency(line[:amount]) %></td>

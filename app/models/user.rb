@@ -306,7 +306,7 @@ class User < ApplicationRecord
       register[d][:amount] -= daily_spend
     end
 
-    running_total = self.aggregate_amounts[:current_spending_balance]
+    running_total = self.aggregate_amounts(on_date)[:current_spending_balance]
 
     register.each do |date,line|
       running_total += line[:amount]
