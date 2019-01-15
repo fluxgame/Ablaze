@@ -269,12 +269,12 @@ class User < ApplicationRecord
     tax
   end
         
-  def forecast_register
+  def forecast_register(on_date = Date.today)
     register = {}
     annual_spending = 0
     Transaction.where(user_id: self.id).where.not(repeat_frequency: nil).each do |st|
       schedule = st.schedule
-      for d in Date.today..(Date.today + 1.year - 1.day)
+      for d in on_date..(on_date + 1.year - 1.day)
         register[d] = {amount: 0} if register[d].nil?
         if schedule.occurs_on?(d)
           st.ledger_entries.each do |le|
@@ -288,21 +288,21 @@ class User < ApplicationRecord
     annual_budget = 0
 
     Account.where(user_id: self.id).select{ |a| a.post_fi_expense? }.each do |a|
-      reserved = [0,a.available_to_spend].max
-      register[Date.today][:amount] -= reserved
+      reserved = [0,a.available_to_spend(on_date)].max
+      register[on_date][:amount] -= reserved
       annual_spending += reserved
-      annual_budget += (a.fi_budget > 0 ? a.fi_budget : a.average_weekly_spending) * (365.25 / 7)
+      annual_budget += (a.fi_budget > 0 ? a.fi_budget : a.average_weekly_spending(on_date)) * (365.25 / 7)
     end
     
     self.budget_goals.each do |goal|
       reserved = [0,goal.remaining_amount].max
-      register[Date.today][:amount] -= reserved
+      register[on_date][:amount] -= reserved
 #      annual_spending += reserved if goal.account.post_fi_expense?
     end
     
     daily_spend = [0, (annual_budget - annual_spending) / 365.25].max
     
-    for d in (Date.today + 1.day)..(Date.today + 1.year - 1.day)
+    for d in (on_date + 1.day)..(on_date + 1.year - 1.day)
       register[d][:amount] -= daily_spend
     end
 

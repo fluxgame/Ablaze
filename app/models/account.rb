@@ -75,7 +75,7 @@ class Account < ApplicationRecord
     end
   end
   
-  def average_weekly_spending(in_asset_type = self.asset_type, on_date = Date.today)
+  def average_weekly_spending(on_date = Date.today, in_asset_type = self.asset_type)
     if [:expense, :income].include? self.account_type.master_account_type.to_sym
 #      on_date = on_date.beginning_of_week(:sunday) - 1
       yot = self.years_of_transactions(on_date)
@@ -92,16 +92,16 @@ class Account < ApplicationRecord
     budget
   end
   
-  def allowed_spending(in_asset_type = self.asset_type, on_date = Date.today)    
+  def allowed_spending(on_date = Date.today, in_asset_type = self.asset_type)
     (self.weekly_budget(in_asset_type) * self.years_of_transactions(on_date) * (365.25 / 7)).round(in_asset_type.precision)
   end
 
-  def available_to_budget(in_asset_type = self.asset_type, on_date = Date.today)
+  def available_to_budget(on_date = Date.today, in_asset_type = self.asset_type)
     weekly_budget = self.weekly_budget(in_asset_type)
 
     return nil if weekly_budget == 0
 
-    allowed_spending(in_asset_type, on_date) - self.balance_as_of(on_date) - self.budgeted_amount - weekly_budget
+    allowed_spending(on_date, in_asset_type) - self.balance_as_of(on_date) - self.budgeted_amount - weekly_budget
     
 =begin
     budget = self.asset_type.exchange(self.fi_budget, in_asset_type)
@@ -118,12 +118,12 @@ class Account < ApplicationRecord
 =end
   end
 
-  def available_to_spend(in_asset_type = self.asset_type, on_date = Date.today)
+  def available_to_spend(on_date = Date.today, in_asset_type = self.asset_type)
     weekly_budget = self.weekly_budget(in_asset_type)
 
     return nil if weekly_budget == 0
     
-    ats = available_to_budget(in_asset_type, on_date) + weekly_budget
+    ats = available_to_budget(on_date, in_asset_type) + weekly_budget
 
 =begin
     if ats < 0
