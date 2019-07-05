@@ -21,7 +21,7 @@ class User < ApplicationRecord
       if last_data_archive.date < first_transaction
         date = first_transaction
       else
-        date = last_data_archive.date + 1.day
+        date = last_data_archive.date + 1.month
       end
     end
     
@@ -34,7 +34,7 @@ class User < ApplicationRecord
           annual_savings: am[:savings],
           net_worth: am[:net_worth],
           annual_post_fi_spending: am[:post_fi_expenses]      
-      date += 1.day
+      date += 1.month
     end
     
     ReportDatum.where(user_id: self.id)
