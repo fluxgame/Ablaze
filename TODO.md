@@ -1,0 +1,25 @@
+##TODO List:
+
+- [x] account register (CRUD ledger entries)
+- [x] merge transactions
+- [x] transaction edit
+- [x] credit/debit balance verification
+- [x] account reconciliation
+- [x] scheduled transactions
+- [x] account balance forecasting
+- [x] "available to spend" amount
+- [x] budget goals
+- [x] FI date calculation
+- [ ] easier scheduled transaction creation
+- [x] copy & persist scheduled transactions
+- [ ] disallow adding a date to a ledger entry contained by a scheduled transaction
+- [x] rolling month spending by expense account
+- [ ] loan payment scheduler
+- [x] prevent changing the date or amount of a reconciled transaction
+- [ ] reverse a reconciliation
+- [x] scheduled tasks to create scheduled transations and pull stock price
+- [x] live updates of debit and credit totals in edit mode
+- [ ] implement JSON web tokens for API access
+- [ ] view account register with reconciled transactions
+- [ ] account register pagination
+- [ ] cleanup account index

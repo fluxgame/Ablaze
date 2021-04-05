@@ -1,0 +1,5 @@
+id,name,abbreviation,created_at,updated_at,fetch_prices,currency_symbol,precision
+81,"United States Dollars",USD,"2018-04-12 00:17:50.827538","2018-05-14 21:59:24.657026",f,$,2
+82,"Vanguard Total Stock Market ETF",VTI,"2018-04-12 00:17:50.837314","2018-05-14 21:59:24.656795",t,"",0
+83,"Vanguard Total Stock Market Index Fund Admiral Shares",VTSAX,"2018-04-12 00:17:50.847671","2018-05-14 03:43:32.128744",t,"",3
+85,"Vanguard 500 Index Fund Admiral Shares",VFIAX,"2018-04-17 13:49:22.526288","2018-05-14 03:43:32.703500",t,"",4
